@@ -12,7 +12,7 @@ import io.github.nickacpt.nickarcade.data.MongoDbConnectionHelper
 import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
 import io.github.nickacpt.nickarcade.events.registerJoinEvents
 import io.github.nickacpt.nickarcade.events.registerLeaveEvents
-import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandManager
+import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.event
 import io.github.nickacpt.nickarcade.utils.scope
@@ -32,7 +32,7 @@ class NickArcadePlugin : JavaPlugin() {
 
     private lateinit var databaseClient: CoroutineClient
     lateinit var database: CoroutineDatabase
-    private lateinit var commandManager: NickArcadeCommandManager
+    private lateinit var commandManager: NickArcadeCommandHelper
 
     companion object {
         lateinit var instance: NickArcadePlugin
@@ -55,7 +55,7 @@ class NickArcadePlugin : JavaPlugin() {
 
     override fun onEnable() {
         instance = this
-        commandManager = NickArcadeCommandManager(this).init() ?: disablePlugin("Unable to initialize command manager")
+        commandManager = NickArcadeCommandHelper(this).init() ?: disablePlugin("Unable to initialize command manager")
 
         initMainConfig()
         initHypixelServices() ?: disablePlugin("Unable to initialize Hypixel services")
@@ -125,7 +125,7 @@ fun registerFireballEvents() {
     }
 }
 
-private fun NickArcadeCommandManager.registerCommands() {
+private fun NickArcadeCommandHelper.registerCommands() {
     annotationParser.parse(RankCommands)
     annotationParser.parse(TestCommands)
 }

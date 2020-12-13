@@ -3,36 +3,55 @@ package io.github.nickacpt.nickarcade.commands
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.annotations.CommandPermission
+import cloud.commandframework.annotations.specifier.Greedy
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
+import io.github.nickacpt.nickarcade.data.PlayerData
 import io.github.nickacpt.nickarcade.data.PlayerDataManager
-import io.github.nickacpt.nickarcade.data.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
 
 object RankCommands {
     @CommandPermission
-    @CommandMethod("setrank <player> <rank>")
+    @CommandMethod("ranks set <player> <rank>")
     fun setPlayerRank(
         sender: CommandSender,
-        @Argument("player") target: Player,
+        @Argument("player") playerData: PlayerData,
         @Argument("rank") rank: HypixelPackageRank
-    ): Unit = command(sender) {
-        val playerData = target.getPlayerData()
+    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
         playerData.rankOverride = rank
         PlayerDataManager.savePlayerData(playerData)
-        sender.sendMessage(ChatColor.GREEN.toString() + "Successfully set ${target.name}'s rank to ${rank.name}")
+        sender.sendMessage(ChatColor.GREEN.toString() + "Successfully set ${playerData.displayName}'s rank to ${rank.name}")
     }
 
-    @CommandMethod("resetrank <player>")
+    @CommandMethod("ranks reset <player>")
     fun resetPlayerRank(
         sender: CommandSender,
-        @Argument("player") target: Player
-    ): Unit = command(sender) {
-        val playerData = target.getPlayerData()
+        @Argument("player") playerData: PlayerData
+    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
         playerData.rankOverride = null
         PlayerDataManager.savePlayerData(playerData)
-        sender.sendMessage(ChatColor.GREEN.toString() + "Successfully reset ${target.name}'s rank.")
+        sender.sendMessage(ChatColor.GREEN.toString() + "Successfully reset ${playerData.displayName}'s rank.")
+    }
+
+    @CommandMethod("ranks setprefix <player> <prefix>")
+    fun setPlayerPrefix(
+        sender: CommandSender,
+        @Argument("player") playerData: PlayerData,
+        @Greedy @Argument("prefix") prefix: String
+    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
+        playerData.prefixOverride = "${prefix.trim().replace('&', '§')} "
+        PlayerDataManager.savePlayerData(playerData)
+        sender.sendMessage(ChatColor.GREEN.toString() + "Successfully set ${playerData.displayName}'s prefix.")
+    }
+
+    @CommandMethod("ranks resetprefix <player>")
+    fun resetPlayerPrefix(
+        sender: CommandSender,
+        @Argument("player") playerData: PlayerData
+    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
+        playerData.prefixOverride = null
+        PlayerDataManager.savePlayerData(playerData)
+        sender.sendMessage(ChatColor.GREEN.toString() + "Successfully set ${playerData.displayName}'s prefix.")
     }
 }

@@ -6,18 +6,18 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.github.nickacpt.hypixelapi.utis.NetworkLeveling
 
 data class HypixelPlayer(
-    val playerName: String,
-    val displayName: String,
+    val playerName: String? = "",
+    @JsonProperty("displayname") val displayName: String? = "",
     val newPackageRank: HypixelPackageRank? = null,
     val monthlyPackageRank: HypixelPackageRank? = null,
-    val networkExp: Double,
+    val networkExp: Double? = 0.0,
     @JsonProperty("rank") val legacyRank: HypixelPackageRank? = null,
     @JsonProperty("prefix") val userPrefix: String? = null,
     @Transient var rawJsonNode: JsonNode? = null
 ) {
     @get:JsonIgnore
     val networkLevel: Long
-        get() = NetworkLeveling.getLevel(networkExp).toLong()
+        get() = NetworkLeveling.getLevel(networkExp ?: 0.0).toLong()
 
     @get:JsonIgnore
     val effectiveRank: HypixelPackageRank
