@@ -30,8 +30,11 @@ fun registerJoinEvents() {
         }
 
         val superStarColors = listOf(ChatColor.AQUA, ChatColor.RED, ChatColor.GREEN)
-        val joinPrefix = if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${superStarColors.joinToString("") { "$it>" }} " else ""
-        val joinSuffix = if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${superStarColors.reversed().joinToString("") { "$it<" }} " else ""
+        val joinPrefix =
+            if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${superStarColors.joinToString("") { "$it>" }} " else ""
+        val joinSuffix = if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${
+            superStarColors.reversed().joinToString("") { "$it<" }
+        } " else ""
         Bukkit.broadcastMessage("$joinPrefix${playerData.getChatName()}§6 joined the lobby!$joinSuffix")
 
         /*object : TimerBase(30.seconds) {
@@ -48,7 +51,12 @@ fun registerJoinEvents() {
         if (!playerData.hasAtLeastRank(HypixelPackageRank.VIP) && !player.cooldown("chat", 3.seconds)) {
             player.asAudience.sendMessage(
                 text {
-                    it.append(text("You can only chat once every 3 seconds! Ranked users bypass this restriction!", NamedTextColor.RED))
+                    it.append(
+                        text(
+                            "You can only chat once every 3 seconds! Ranked users bypass this restriction!",
+                            NamedTextColor.RED
+                        )
+                    )
                 }
             )
 

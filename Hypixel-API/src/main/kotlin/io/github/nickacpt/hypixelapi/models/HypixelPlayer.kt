@@ -17,11 +17,12 @@ data class HypixelPlayer(
 ) {
     @get:JsonIgnore
     val networkLevel: Long
-    get() = NetworkLeveling.getLevel(networkExp).toLong()
+        get() = NetworkLeveling.getLevel(networkExp).toLong()
 
     @get:JsonIgnore
     val effectiveRank: HypixelPackageRank
-        get() = legacyRank ?: monthlyPackageRank.takeUnless { it?.equals(HypixelPackageRank.NONE) ?: false } ?: newPackageRank
+        get() = legacyRank ?: monthlyPackageRank.takeUnless { it?.equals(HypixelPackageRank.NONE) ?: false }
+        ?: newPackageRank
         ?: HypixelPackageRank.NORMAL
 
     @get:JsonIgnore

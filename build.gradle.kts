@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import kr.entree.spigradle.kotlin.paper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 

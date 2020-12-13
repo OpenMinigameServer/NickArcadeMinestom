@@ -11,13 +11,14 @@ import java.io.File
 
 inline class ArcadeConfigurationFile(private val fileName: String) {
     val file get() = File(pluginInstance.dataFolder, fileName)
-    val loader: YamlConfigurationLoader get() = YamlConfigurationLoader.builder()
-        .defaultOptions { opts: ConfigurationOptions ->
-            opts.shouldCopyDefaults(true)
-        }
-        .nodeStyle(NodeStyle.BLOCK)
-        .file(file)
-        .build()
+    val loader: YamlConfigurationLoader
+        get() = YamlConfigurationLoader.builder()
+            .defaultOptions { opts: ConfigurationOptions ->
+                opts.shouldCopyDefaults(true)
+            }
+            .nodeStyle(NodeStyle.BLOCK)
+            .file(file)
+            .build()
 
     inline fun <reified T> load(): T {
         val node: CommentedConfigurationNode = loader.load()

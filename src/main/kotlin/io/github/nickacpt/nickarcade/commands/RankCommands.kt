@@ -9,7 +9,6 @@ import io.github.nickacpt.nickarcade.data.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
-import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.entity.Player
 
 object RankCommands {

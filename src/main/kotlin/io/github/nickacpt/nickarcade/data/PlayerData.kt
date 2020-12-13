@@ -26,13 +26,16 @@ class PlayerData(
     }
 
     @get:JsonIgnore
-    val effectivePrefix: String get() = prefixOverride ?: rankOverride?.prefix ?: hypixelData?.effectivePrefix ?: ""
+    val effectivePrefix: String
+        get() = prefixOverride ?: rankOverride?.prefix ?: hypixelData?.effectivePrefix ?: ""
 
     @get:JsonIgnore
-    val displayName: String get() = hypixelData?.displayName ?: ""
+    val displayName: String
+        get() = hypixelData?.displayName ?: ""
 
     @get:JsonIgnore
-    val effectiveRank: HypixelPackageRank get() = rankOverride ?: hypixelData?.effectiveRank ?: HypixelPackageRank.NONE
+    val effectiveRank: HypixelPackageRank
+        get() = rankOverride ?: hypixelData?.effectiveRank ?: HypixelPackageRank.NONE
 
     fun formatChatMessage(message: String): String {
         return "${getChatName()}${effectiveRank.chatMessagePrefix}: $message"

@@ -12,7 +12,6 @@ import io.github.nickacpt.nickarcade.NickArcadePlugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
-import net.kyori.adventure.text.ComponentLike
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -22,7 +21,11 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import java.lang.reflect.InvocationTargetException
 
-fun command(sender: CommandSender, requiredRank: HypixelPackageRank = HypixelPackageRank.NONE, block: suspend CoroutineScope.() -> Unit) {
+fun command(
+    sender: CommandSender,
+    requiredRank: HypixelPackageRank = HypixelPackageRank.NONE,
+    block: suspend CoroutineScope.() -> Unit
+) {
     val rank = requiredRank.name.toLowerCase()
     if (requiredRank != HypixelPackageRank.NONE && !sender.hasPermission("group.$rank")) {
         sender.sendMessage(ChatColor.RED.toString() + "You must be $rank or higher to use this command!")

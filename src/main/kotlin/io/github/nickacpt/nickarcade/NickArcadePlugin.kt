@@ -90,7 +90,10 @@ class NickArcadePlugin : JavaPlugin() {
     }
 
     private fun connectMongoDb() {
-        System.setProperty("org.litote.mongo.test.mapping.service", "org.litote.kmongo.jackson.JacksonClassMappingTypeService")
+        System.setProperty(
+            "org.litote.mongo.test.mapping.service",
+            "org.litote.kmongo.jackson.JacksonClassMappingTypeService"
+        )
         databaseClient = mainConfiguration.mongoDbConfiguration.let {
             MongoDbConnectionHelper.buildClient(it.host, it.port, it.username, it.database, it.password)
         }
