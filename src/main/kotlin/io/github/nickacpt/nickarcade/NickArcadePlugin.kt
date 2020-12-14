@@ -16,6 +16,7 @@ import io.github.nickacpt.nickarcade.events.registerLeaveEvents
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.event
+import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.scope
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -27,6 +28,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineDatabase
+import java.io.File
 import java.util.*
 
 class NickArcadePlugin : JavaPlugin() {
@@ -66,7 +68,15 @@ class NickArcadePlugin : JavaPlugin() {
         registerJoinEvents()
         registerLeaveEvents()
 
+        loadProfilesManager()
+
         //registerFireballEvents()
+    }
+
+    private fun loadProfilesManager() {
+        val directory = File(dataFolder, "profiles").also { it.mkdirs() }
+        ProfilesManager.loadProfiles(directory)
+        logger.info("Loaded ${ProfilesManager.profiles.count()} profiles from dump!")
     }
 
     private fun disablePlugin(reason: String): Nothing {
