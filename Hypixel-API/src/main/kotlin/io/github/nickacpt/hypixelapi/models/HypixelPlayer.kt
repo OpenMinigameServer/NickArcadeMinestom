@@ -3,6 +3,7 @@ package io.github.nickacpt.hypixelapi.models
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.hypixelapi.utis.NetworkLeveling
 
 data class HypixelPlayer(
@@ -13,7 +14,9 @@ data class HypixelPlayer(
     val networkExp: Double? = 0.0,
     @JsonProperty("rank") val legacyRank: HypixelPackageRank? = null,
     @JsonProperty("prefix") val userPrefix: String? = null,
-    @Transient var rawJsonNode: JsonNode? = null
+    @Transient var rawJsonNode: JsonNode? = null,
+    var rankPlusColor: MinecraftChatColor = MinecraftChatColor.RED,
+    var monthlyRankColor: MinecraftChatColor = MinecraftChatColor.GOLD,
 ) {
     @get:JsonIgnore
     val networkLevel: Long
@@ -27,6 +30,13 @@ data class HypixelPlayer(
 
     @get:JsonIgnore
     val effectivePrefix: String
-        get() = userPrefix ?: (effectiveRank.prefix)
+        get() = fixUserPrefixSpacing() ?: (effectiveRank.computePrefixForPlayer(
+            effectiveRank.getPlusColor(this),
+            monthlyRankColor
+        ))
+
+    private fun fixUserPrefixSpacing(): String? {
+        return userPrefix?.let { if (!it.endsWith(' ')) "$it " else it }
+    }
 
 }

@@ -1,4 +1,4 @@
-package io.github.nickacpt.nickarcade.timers
+package io.github.nickacpt.nickarcade.utils.timers
 
 import com.github.shynixn.mccoroutine.launch
 import io.github.nickacpt.nickarcade.NickArcadePlugin

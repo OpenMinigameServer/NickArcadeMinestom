@@ -6,6 +6,7 @@ import com.destroystokyo.paper.profile.ProfileProperty
 import io.github.nickacpt.hypixelapi.HypixelService
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.HypixelPlayerInfoHelper
+import io.github.nickacpt.nickarcade.commands.ImpersonateCommands
 import io.github.nickacpt.nickarcade.commands.RankCommands
 import io.github.nickacpt.nickarcade.commands.TestCommands
 import io.github.nickacpt.nickarcade.data.MongoDbConnectionHelper
@@ -126,6 +127,7 @@ fun registerFireballEvents() {
 }
 
 private fun NickArcadeCommandHelper.registerCommands() {
+    annotationParser.parse(ImpersonateCommands)
     annotationParser.parse(RankCommands)
     annotationParser.parse(TestCommands)
 }

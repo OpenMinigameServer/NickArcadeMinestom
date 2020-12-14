@@ -7,14 +7,13 @@ import io.github.nickacpt.nickarcade.data.getPlayerData
 import io.github.nickacpt.nickarcade.utils.*
 import kotlinx.coroutines.delay
 import net.kyori.adventure.identity.Identity
-import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerKickEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import kotlin.time.seconds
 
@@ -35,7 +34,11 @@ fun registerJoinEvents() {
         val joinSuffix = if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${
             superStarColors.reversed().joinToString("") { "$it<" }
         } " else ""
-        Bukkit.broadcastMessage("$joinPrefix${playerData.getChatName()}§6 joined the lobby!$joinSuffix")
+        if (playerData.hasAtLeastRank(HypixelPackageRank.MVP_PLUS)) {
+            bukkitAudiences.all().sendMessage(
+                text("$joinPrefix${playerData.getChatName()}§6 joined the lobby!$joinSuffix").hoverEvent(playerData.computeHoverEventComponent())
+            )
+        }
 
         /*object : TimerBase(30.seconds) {
             override suspend fun onTick(duration: Duration, scope: CoroutineScope) {
@@ -68,14 +71,7 @@ fun registerJoinEvents() {
                 Identity.identity(player.uniqueId),
                 text(message)
                     .hoverEvent(
-                        text {
-                            it.run {
-                                append(text(playerData.getChatName()))
-                                append(newline())
-                                append(text("Hypixel Level: ", NamedTextColor.GRAY))
-                                append(text(playerData.hypixelData?.networkLevel ?: 0, NamedTextColor.GOLD))
-                            }
-                        }
+                        playerData.computeHoverEventComponent()
                     )
             )
         }
@@ -101,6 +97,9 @@ private fun PlayerJoinEvent.sendPlayerDataActionBar() {
 
 fun registerLeaveEvents() {
     event<PlayerQuitEvent> {
+        PlayerDataManager.saveAndRemovePlayerData(player.uniqueId)
+    }
+    event<PlayerKickEvent> {
         PlayerDataManager.saveAndRemovePlayerData(player.uniqueId)
     }
 }

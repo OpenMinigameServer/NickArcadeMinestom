@@ -9,7 +9,9 @@ import com.github.shynixn.mccoroutine.minecraftDispatcher
 import com.google.common.reflect.TypeToken
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.NickArcadePlugin
+import io.github.nickacpt.nickarcade.data.getPlayerData
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import org.bukkit.ChatColor
@@ -26,18 +28,23 @@ fun command(
     requiredRank: HypixelPackageRank = HypixelPackageRank.NONE,
     block: suspend CoroutineScope.() -> Unit
 ) {
-    val rank = requiredRank.name.toLowerCase()
-    if (requiredRank != HypixelPackageRank.NONE && !sender.hasPermission("group.$rank")) {
-        sender.sendMessage(ChatColor.RED.toString() + "You must be $rank or higher to use this command!")
-        return
+    runBlocking {
+        val isPlayer = sender is Player
+        val rank = requiredRank.name.toLowerCase()
+        val requiresPermission = requiredRank != HypixelPackageRank.NONE
+        val hasPermission = !isPlayer || (sender as Player).getPlayerData().hasAtLeastRank(requiredRank)
+        if (requiresPermission && !hasPermission) {
+            sender.sendMessage(ChatColor.RED.toString() + "You must be $rank or higher to use this command!")
+            return@runBlocking
+        }
+        pluginInstance.launch(block)
     }
-    pluginInstance.launch(block)
 }
 
 val pluginInstance get() = NickArcadePlugin.instance
 val bukkitAudiences by lazy { BukkitAudiences.create(pluginInstance) }
 
-val Player.asAudience get() = bukkitAudiences.player(this)
+val CommandSender.asAudience get() = bukkitAudiences.sender(this)
 
 suspend inline fun <T> async(noinline block: suspend CoroutineScope.() -> T): T =
     withContext(pluginInstance.asyncDispatcher, block)

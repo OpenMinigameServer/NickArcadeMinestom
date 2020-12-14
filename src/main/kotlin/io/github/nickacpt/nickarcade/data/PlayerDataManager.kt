@@ -1,6 +1,7 @@
 package io.github.nickacpt.nickarcade.data
 
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
+import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import org.bukkit.entity.Player
 import org.litote.kmongo.upsert
@@ -10,7 +11,13 @@ import java.util.concurrent.ConcurrentHashMap
 object PlayerDataManager {
     private val loadedPlayerMap = ConcurrentHashMap<UUID, PlayerData>()
 
-    fun isPlayerDataLoaded(id: UUID) = loadedPlayerMap.containsKey(id)
+    fun isPlayerDataLoaded(id: UUID): Boolean {
+        val impersonation = ImpersonationManager.getImpersonation(id)
+        if (impersonation != null)
+            return loadedPlayerMap.containsKey(impersonation.uniqueId)
+
+        return loadedPlayerMap.containsKey(id)
+    }
 
     private suspend fun createPlayerDataFromHypixel(id: UUID, name: String): PlayerData {
         return PlayerData(id, fetchHypixelPlayerData(id, name))
@@ -48,9 +55,10 @@ object PlayerDataManager {
     }
 
     suspend fun saveAndRemovePlayerData(uuid: UUID) {
-        loadedPlayerMap[uuid]?.also {
+        val id = ImpersonationManager.getImpersonation(uuid)?.uniqueId ?: uuid
+        loadedPlayerMap[id]?.also {
             savePlayerData(it)
-            loadedPlayerMap.remove(uuid)
+            loadedPlayerMap.remove(id)
         }
     }
 
@@ -61,5 +69,9 @@ object PlayerDataManager {
 }
 
 suspend fun Player.getPlayerData(): PlayerData {
+    val impersonation = ImpersonationManager.getImpersonation(uniqueId)
+    if (impersonation != null)
+        return PlayerDataManager.getPlayerData(impersonation.uniqueId, impersonation.name)
+
     return PlayerDataManager.getPlayerData(uniqueId, name)
 }
