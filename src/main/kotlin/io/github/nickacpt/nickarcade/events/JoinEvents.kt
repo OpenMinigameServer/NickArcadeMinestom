@@ -11,13 +11,11 @@ import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.ChatColor
-import org.bukkit.event.player.AsyncPlayerChatEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerKickEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.*
 import kotlin.time.seconds
 
 fun registerJoinEvents() {
+    blockInvalidNames()
 
     event<PlayerJoinEvent> {
         joinMessage = null
@@ -74,6 +72,18 @@ fun registerJoinEvents() {
                         playerData.computeHoverEventComponent()
                     )
             )
+        }
+    }
+}
+
+private fun blockInvalidNames() {
+    val validPattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
+    event<AsyncPlayerPreLoginEvent> {
+        val isValidName = validPattern.matchEntire(this.name) != null
+
+        if (!isValidName) {
+            kickMessage = "You are using an invalid Minecraft name and thus you got denied access."
+            loginResult = AsyncPlayerPreLoginEvent.Result.KICK_BANNED
         }
     }
 }
