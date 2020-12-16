@@ -61,20 +61,16 @@ class PlayerData(
     private fun computeEffectivePrefix(): String? {
         return overrides.prefixOverride?.let { if (!it.endsWith(' ')) "$it " else it }
             ?: if (hypixelData != null)
-                hypixelData?.let {
-                    val prefixForPlayer = overrides.rankOverride?.computePrefixForPlayer(
-                        it
-                    )
-                    if (prefixForPlayer != null) {
-                        return@let prefixForPlayer
+                hypixelData?.let { hypixelPlayer: HypixelPlayer ->
+                    if (overrides.monthlyRankColorOverride != null || overrides.rankPlusColorOverride != null) {
+                        return@let effectiveRank.computePrefixForPlayer(
+                            overrides.rankPlusColorOverride ?: MinecraftChatColor.RED,
+                            overrides.monthlyRankColorOverride ?: MinecraftChatColor.GOLD
+                        )
                     } else {
-                        if (overrides.monthlyRankColorOverride != null || overrides.rankPlusColorOverride != null) {
-                            return@let it.effectiveRank.computePrefixForPlayer(
-                                overrides.rankPlusColorOverride ?: MinecraftChatColor.RED,
-                                overrides.rankPlusColorOverride ?: MinecraftChatColor.GOLD
-                            )
-                        }
-                        return@let hypixelData?.effectivePrefix
+                        return@let overrides.rankOverride?.computePrefixForPlayer(
+                            hypixelPlayer
+                        ) ?: hypixelData?.effectivePrefix
                     }
                 } else null
     }
@@ -94,6 +90,7 @@ class PlayerData(
 
     @JsonIgnore
     fun getChatName() = "${effectivePrefix}$displayName"
+
     fun hasAtLeastRank(rank: HypixelPackageRank): Boolean {
         return effectiveRank.ordinal >= rank.ordinal
     }
