@@ -8,9 +8,14 @@ import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
+import io.github.nickacpt.nickarcade.chat.ChatChannelType
+import io.github.nickacpt.nickarcade.utils.bukkitAudiences
+import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEventSource
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import java.util.*
 
 data class PlayerOverrides(
@@ -25,13 +30,28 @@ class PlayerData(
     @JsonIgnore var hypixelData: HypixelPlayer?,
     val overrides: PlayerOverrides = PlayerOverrides(),
     val rawHypixelData: JsonNode? = hypixelData?.rawJsonNode,
-    val cooldowns: MutableMap<String, Long> = mutableMapOf()
+    val cooldowns: MutableMap<String, Long> = mutableMapOf(),
+    currentChannel: ChatChannelType? = null
 ) {
     init {
         if (rawHypixelData != null) {
             hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
         }
     }
+
+    val currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
+
+    @get:JsonIgnore
+    val audience: Audience
+        get() = bukkitAudiences.player(uuid)
+
+    @get:JsonIgnore
+    val player: Player?
+        get() = Bukkit.getPlayer(uuid)
+
+    @get:JsonIgnore
+    val isOnline: Boolean
+        get() = player != null
 
     @get:JsonIgnore
     val effectivePrefix: String

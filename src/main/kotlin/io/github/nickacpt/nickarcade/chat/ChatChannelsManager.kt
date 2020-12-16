@@ -1,18 +1,21 @@
 package io.github.nickacpt.nickarcade.chat
 
+import io.github.nickacpt.nickarcade.chat.impl.AbstractChatChannel
+import io.github.nickacpt.nickarcade.chat.impl.AllChatChannel
+
 object ChatChannelsManager {
-    private val channels = mutableMapOf<String, AbstractChatChannel>()
+    internal val channels = mutableMapOf<ChatChannelType, AbstractChatChannel>()
     private val defaultChannel = AllChatChannel()
 
     init {
         registerChannel(defaultChannel)
     }
 
-    fun registerChannel(channel: AbstractChatChannel) {
-        channels[channel.id] = channel
+    private fun registerChannel(channel: AbstractChatChannel) {
+        channels[channel.type] = channel
     }
 
-    fun getChannelById(id: String): AbstractChatChannel {
+    fun getChannelByType(id: ChatChannelType): AbstractChatChannel {
         return channels[id] ?: defaultChannel
     }
 }
