@@ -2,6 +2,7 @@ package io.github.nickacpt.nickarcade.chat
 
 import io.github.nickacpt.nickarcade.chat.impl.AbstractChatChannel
 import io.github.nickacpt.nickarcade.chat.impl.AllChatChannel
+import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 
 object ChatChannelsManager {
     internal val channels = mutableMapOf<ChatChannelType, AbstractChatChannel>()
@@ -17,5 +18,9 @@ object ChatChannelsManager {
 
     fun getChannelByType(id: ChatChannelType): AbstractChatChannel {
         return channels[id] ?: defaultChannel
+    }
+
+    fun registerChatChannelCommands(commandHelper: NickArcadeCommandHelper) {
+
     }
 }

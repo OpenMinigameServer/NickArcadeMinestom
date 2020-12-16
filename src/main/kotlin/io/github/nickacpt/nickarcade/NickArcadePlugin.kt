@@ -6,6 +6,7 @@ import com.destroystokyo.paper.profile.ProfileProperty
 import io.github.nickacpt.hypixelapi.HypixelService
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.HypixelPlayerInfoHelper
+import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.commands.ImpersonateCommands
 import io.github.nickacpt.nickarcade.commands.MiscCommands
 import io.github.nickacpt.nickarcade.commands.RankCommands
@@ -142,4 +143,5 @@ private fun NickArcadeCommandHelper.registerCommands() {
     annotationParser.parse(ImpersonateCommands)
     annotationParser.parse(RankCommands)
     annotationParser.parse(TestCommands)
+    ChatChannelsManager.registerChatChannelCommands(this)
 }

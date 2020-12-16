@@ -9,6 +9,7 @@ import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
+import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.utils.bukkitAudiences
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
@@ -47,7 +48,7 @@ class PlayerData(
 
     @get:JsonIgnore
     val player: Player?
-        get() = Bukkit.getPlayer(uuid)
+        get() = Bukkit.getPlayer(uuid) ?: ImpersonationManager.getImpersonatorPlayer(uuid)
 
     @get:JsonIgnore
     val isOnline: Boolean

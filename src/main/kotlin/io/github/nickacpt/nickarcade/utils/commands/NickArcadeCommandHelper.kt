@@ -13,7 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin
 class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
 
     lateinit var annotationParser: AnnotationParser<CommandSender>
-    private lateinit var manager: NickArcadeCommandManager<CommandSender>
+    lateinit var manager: NickArcadeCommandManager<CommandSender>
 
 
     fun init(): NickArcadeCommandHelper? {

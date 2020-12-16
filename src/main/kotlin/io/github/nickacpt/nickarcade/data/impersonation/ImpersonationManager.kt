@@ -1,5 +1,7 @@
 package io.github.nickacpt.nickarcade.data.impersonation
 
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import java.util.*
 
 object ImpersonationManager {
@@ -15,5 +17,11 @@ object ImpersonationManager {
 
     fun impersonate(id: UUID, impersonation: ImpersonationData) {
         impersonations[id] = impersonation
+    }
+
+    fun getImpersonatorPlayer(uuid: UUID): Player? {
+        return impersonations
+            .filterValues { it.uniqueId == uuid }.keys.firstOrNull()
+            ?.let { Bukkit.getPlayer(it) }
     }
 }
