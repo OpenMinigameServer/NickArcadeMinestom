@@ -23,7 +23,8 @@ data class PlayerOverrides(
     var rankOverride: HypixelPackageRank? = null,
     var prefixOverride: String? = null,
     var monthlyRankColorOverride: MinecraftChatColor? = null,
-    var rankPlusColorOverride: MinecraftChatColor? = null
+    var rankPlusColorOverride: MinecraftChatColor? = null,
+    var miseryMode: Boolean? = null
 )
 
 class PlayerData(

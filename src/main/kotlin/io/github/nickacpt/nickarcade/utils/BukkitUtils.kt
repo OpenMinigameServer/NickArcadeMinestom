@@ -63,6 +63,7 @@ inline fun <reified T : Event> event(
     pluginInstance.server.pluginManager.registerEvent(
         type.rawType as Class<out Event>, object : Listener {}, eventPriority,
         { _, event ->
+            if (!T::class.java.isInstance(event)) return@registerEvent
             try {
                 val isAsync = forceAsync || event.isAsynchronous
                 if (isAsync) {

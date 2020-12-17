@@ -15,6 +15,7 @@ import io.github.nickacpt.nickarcade.data.MongoDbConnectionHelper
 import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
 import io.github.nickacpt.nickarcade.events.registerJoinEvents
 import io.github.nickacpt.nickarcade.events.registerLeaveEvents
+import io.github.nickacpt.nickarcade.events.registerMiseryEvents
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.event
@@ -68,6 +69,7 @@ class NickArcadePlugin : JavaPlugin() {
         commandManager.registerCommands()
 
         registerJoinEvents()
+        registerMiseryEvents()
         registerLeaveEvents()
 
         loadProfilesManager()
@@ -144,4 +146,5 @@ private fun NickArcadeCommandHelper.registerCommands() {
     annotationParser.parse(RankCommands)
     annotationParser.parse(TestCommands)
     ChatChannelsManager.registerChatChannelCommands(this)
+    RankCommands.registerOverrideRanksCommands(this)
 }

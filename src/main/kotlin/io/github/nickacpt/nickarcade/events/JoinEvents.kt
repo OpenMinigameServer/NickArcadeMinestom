@@ -10,6 +10,7 @@ import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.event.player.*
 
@@ -24,6 +25,8 @@ fun registerJoinEvents() {
         val playerData = async {
             player.getPlayerData()
         }
+
+        Bukkit.getPluginManager().callEvent(PlayerDataJoinEvent(playerData))
 
         val superStarColors = listOf(ChatColor.AQUA, ChatColor.RED, ChatColor.GREEN)
         val joinPrefix =

@@ -1,25 +1,30 @@
 package io.github.nickacpt.nickarcade.commands
 
+import cloud.commandframework.Command
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
-import cloud.commandframework.annotations.specifier.Greedy
+import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.nickarcade.data.PlayerData
 import io.github.nickacpt.nickarcade.data.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.PlayerOverrides
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
+import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.div
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor.GREEN
+import org.apache.commons.lang.StringUtils
 import org.bukkit.command.CommandSender
 import org.checkerframework.checker.nullness.qual.NonNull
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.exists
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.jvmErasure
 
 object RankCommands {
 
@@ -60,130 +65,6 @@ object RankCommands {
         }
     }
 
-    @CommandMethod("ranks|rank set <player> <rank>")
-    fun setPlayerRank(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData,
-        @Argument("rank") rank: HypixelPackageRank
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.rankOverride = rank
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully set ${playerData.displayName}'s rank to ${rank.name}",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank setplus <player> <color>")
-    fun setPlayerRankPlus(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData,
-        @Argument("color") color: MinecraftChatColor
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.rankPlusColorOverride = color
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully set ${playerData.displayName}'s plus color to ${color.name}",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank resetplus <player>")
-    fun setPlayerRankPlus(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.rankPlusColorOverride = null
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully reset ${playerData.displayName}'s plus color",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank setmonthlyrank <player> <color>")
-    fun setPlayerMonthlyRankColor(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData,
-        @Argument("color") color: MinecraftChatColor
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.monthlyRankColorOverride = color
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully set ${playerData.displayName}'s monthly rank color to ${color.name}",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank resetmonthlyrank <player>")
-    fun resetPlayerMonthlyRankColor(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.monthlyRankColorOverride = null
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully reset ${playerData.displayName}'s monthly rank color",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank reset|remove <player>")
-    fun resetPlayerRank(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.rankOverride = null
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully reset ${playerData.displayName}'s rank.",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank setprefix <player> <prefix>")
-    fun setPlayerPrefix(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData,
-        @Greedy @Argument("prefix") prefix: String
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.prefixOverride = "${prefix.trim().replace('&', '§')} "
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully set ${playerData.displayName}'s prefix.",
-                GREEN
-            ), playerData
-        )
-    }
-
-    @CommandMethod("ranks|rank resetprefix|removeprefix <player>")
-    fun resetPlayerPrefix(
-        sender: CommandSender,
-        @Argument("player") playerData: PlayerData
-    ): Unit = command(sender, HypixelPackageRank.ADMIN) {
-        playerData.overrides.prefixOverride = null
-        PlayerDataManager.savePlayerData(playerData)
-        sendSuccessMessage(
-            sender, text(
-                "Successfully reset ${playerData.displayName}'s prefix.",
-                GREEN
-            ), playerData
-        )
-    }
-
     private fun sendSuccessMessage(
         sender: CommandSender,
         message: @NonNull TextComponent,
@@ -205,4 +86,66 @@ object RankCommands {
         "Their display name is now ",
         GREEN
     ).append(text(playerData.getChatName()))
+
+    fun registerOverrideRanksCommands(helper: NickArcadeCommandHelper) {
+        val kClass = PlayerOverrides::class
+        kClass.declaredMemberProperties.forEach {
+            if (it is KMutableProperty1<PlayerOverrides, *>) {
+                registerPropertySubcommand(helper, it as KMutableProperty1<PlayerOverrides, Any?>)
+            }
+        }
+    }
+
+    private fun <T> registerPropertySubcommand(
+        helper: NickArcadeCommandHelper,
+        prop: KMutableProperty1<PlayerOverrides, T?>
+    ) {
+        val propChanged = prop.name.capitalize().replace("Override", "")
+        helper.manager.command(
+            helper.manager.commandBuilder("ranks", "rank").createSetValueHandler(propChanged, prop).build()
+        )
+        if (prop.returnType.isMarkedNullable)
+            helper.manager.command(
+                helper.manager.commandBuilder("ranks", "rank").literal("reset$propChanged", "remove$propChanged")
+                    .argument(PlayerData::class.java, "player") {
+                        it.asRequired()
+                    }.handler(handleValueSet(prop, propChanged))
+                    .build()
+            )
+    }
+
+    private fun <T> handleValueSet(
+        prop: KMutableProperty1<PlayerOverrides, T?>,
+        propChanged: String,
+    ): (commandContext: @NonNull CommandContext<CommandSender>) -> Unit =
+        {
+            command(it.sender, HypixelPackageRank.ADMIN) {
+                val player = it.get<PlayerData>("player")
+                val valueFinal = it.getOrDefault<T>("value", null)
+                prop.set(player.overrides, valueFinal)
+                val changed = StringUtils.join(
+                    StringUtils.splitByCharacterTypeCamelCase(propChanged),
+                    ' '
+                )
+                val message =
+                    if (valueFinal != null) "Successfully set ${player.displayName}'s $changed to $valueFinal" else "Successfully reset ${player.displayName}'s $changed"
+                sendSuccessMessage(
+                    it.sender,
+                    text(message, GREEN),
+                    player
+                )
+            }
+        }
+
+    private fun <T> Command.Builder<CommandSender>.createSetValueHandler(
+        propChanged: String,
+        prop: KMutableProperty1<PlayerOverrides, T?>
+    ) = this.literal("set$propChanged")
+        .argument(PlayerData::class.java, "player") {
+            it.asRequired()
+        }
+        .argument(prop.returnType.jvmErasure.java, "value") {
+            it.asRequired()
+        }
+        .handler(handleValueSet(prop, propChanged))
 }
