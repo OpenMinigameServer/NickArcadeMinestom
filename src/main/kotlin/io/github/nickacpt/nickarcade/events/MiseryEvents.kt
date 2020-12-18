@@ -3,8 +3,6 @@ package io.github.nickacpt.nickarcade.events
 import io.github.nickacpt.nickarcade.data.getPlayerData
 import io.github.nickacpt.nickarcade.utils.event
 import kotlinx.coroutines.delay
-import net.kyori.adventure.key.Key
-import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor.BLACK
@@ -71,7 +69,6 @@ fun registerMiseryEvents() {
         })
 
         bukkitPlayer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, Int.MAX_VALUE, 100, true, false, false))
-        val entityBat = Sound.sound(Key.key("minecraft:entity.bat.death"), Sound.Source.PLAYER, 1.0f, 1.0f)
         bukkitPlayer.playSound(bukkitPlayer.location, org.bukkit.Sound.ENTITY_BAT_DEATH, SoundCategory.MASTER, 1f, 1f)
 
         while (bukkitPlayer.isOnline) {

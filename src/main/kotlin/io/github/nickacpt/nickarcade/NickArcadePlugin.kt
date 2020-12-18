@@ -7,10 +7,7 @@ import io.github.nickacpt.hypixelapi.HypixelService
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.HypixelPlayerInfoHelper
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
-import io.github.nickacpt.nickarcade.commands.ImpersonateCommands
-import io.github.nickacpt.nickarcade.commands.MiscCommands
-import io.github.nickacpt.nickarcade.commands.RankCommands
-import io.github.nickacpt.nickarcade.commands.TestCommands
+import io.github.nickacpt.nickarcade.commands.*
 import io.github.nickacpt.nickarcade.data.MongoDbConnectionHelper
 import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
 import io.github.nickacpt.nickarcade.events.registerJoinEvents
@@ -141,10 +138,11 @@ fun registerFireballEvents() {
 }
 
 private fun NickArcadeCommandHelper.registerCommands() {
-    annotationParser.parse(MiscCommands)
-    annotationParser.parse(ImpersonateCommands)
-    annotationParser.parse(RankCommands)
     annotationParser.parse(TestCommands)
+    annotationParser.parse(ImpersonateCommands)
+    annotationParser.parse(MiscCommands)
+    annotationParser.parse(RankCommands)
+    annotationParser.parse(ChatCommands)
     ChatChannelsManager.registerChatChannelCommands(this)
     RankCommands.registerOverrideRanksCommands(this)
 }

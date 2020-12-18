@@ -11,9 +11,16 @@ import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.NickArcadePlugin
 import io.github.nickacpt.nickarcade.data.getPlayerData
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toCollection
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.platform.AudienceProvider
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -79,4 +86,17 @@ inline fun <reified T : Event> event(
         },
         pluginInstance, ignoreCancelled
     )
+}
+
+
+/**
+ * Creates an audience based on a viewer predicate.
+ *
+ * @param predicate a predicate
+ * @return an audience
+ * @since 4.0.0
+ */
+suspend fun AudienceProvider.filterSuspend(predicate: suspend (CommandSender) -> Boolean): Audience {
+    val list = Bukkit.getOnlinePlayers() + Bukkit.getConsoleSender()
+    return Audience.audience(list.asFlow().filter(predicate).map { it.asAudience }.toCollection(mutableListOf()))
 }

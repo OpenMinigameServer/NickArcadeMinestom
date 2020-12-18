@@ -4,7 +4,6 @@ import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.chat.ChatEmote
 import io.github.nickacpt.nickarcade.data.PlayerData
-import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.cooldown
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.identity.Identity
@@ -16,11 +15,15 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 
 abstract class AbstractChatChannel(val type: ChatChannelType) {
-    abstract fun getRecipients(sender: PlayerData, message: String): Audience
+    abstract suspend fun getRecipients(sender: PlayerData, message: String): Audience
 
-    open fun getPlayerRateLimit(sender: PlayerData): Duration = Duration.ZERO
+    open suspend fun getPlayerRateLimit(sender: PlayerData): Duration = Duration.ZERO
 
-    open fun formatMessage(sender: PlayerData, senderName: ComponentLike, message: ComponentLike): ComponentLike {
+    open suspend fun formatMessage(
+        sender: PlayerData,
+        senderName: ComponentLike,
+        message: ComponentLike
+    ): ComponentLike {
         val chatColor =
             if (sender.hasAtLeastRank(HypixelPackageRank.VIP)) NamedTextColor.WHITE else NamedTextColor.GRAY
 
@@ -36,10 +39,10 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
     suspend fun sendMessageInternal(sender: PlayerData, message: String) {
         var rateLimit = getPlayerRateLimit(sender)
         if (sender.overrides.miseryMode == true) rateLimit = 10.seconds
-        val player = sender.player ?: return
+        val player = sender.player
 
-        if (rateLimit > Duration.ZERO && !player.cooldown("chat-$type", rateLimit)) {
-            player.asAudience.sendMessage(
+        if (player != null && rateLimit > Duration.ZERO && !player.cooldown("chat-$type", rateLimit)) {
+            sender.audience.sendMessage(
                 text {
                     it.append(
                         text(
@@ -72,14 +75,14 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         return modifiedMessage
     }
 
-    private fun processEmotes(modifiedMessage: Component): Component {
-        var modifiedMessage1 = modifiedMessage
+    private fun processEmotes(message: Component): Component {
+        var modifiedMessage = message
         ChatEmote.values().forEach { emote ->
-            modifiedMessage1 = modifiedMessage1.replaceText {
+            modifiedMessage = modifiedMessage.replaceText {
                 it.matchLiteral(emote.emote)
                 it.replacement(emote.replacement)
             }
         }
-        return modifiedMessage1
+        return modifiedMessage
     }
 }

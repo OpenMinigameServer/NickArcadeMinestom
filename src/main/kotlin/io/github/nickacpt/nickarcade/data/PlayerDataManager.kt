@@ -1,8 +1,10 @@
 package io.github.nickacpt.nickarcade.data
 
+import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.utils.pluginInstance
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.litote.kmongo.upsert
 import java.util.*
@@ -63,12 +65,24 @@ object PlayerDataManager {
     }
 
     suspend fun savePlayerData(it: PlayerData) {
+        //Don't save Console Player Data
+        if (it.uuid == UUID(0, 0)) return
+
         pluginInstance.logger.info("Saving player data for ${it.displayName} [${it.uuid}]")
         playerDataCollection.updateOneById(it.uuid, it, upsert())
     }
 }
 
-suspend fun Player.getPlayerData(): PlayerData {
+val consoleData = PlayerData(
+    UUID(0, 0),
+    HypixelPlayer("Server Console", "Server Console", newPackageRank = HypixelPackageRank.ADMIN),
+    PlayerOverrides()
+)
+
+suspend fun CommandSender.getPlayerData(): PlayerData {
+    if (this !is Player) {
+        return consoleData
+    }
     val impersonation = ImpersonationManager.getImpersonation(uniqueId)
     if (impersonation != null)
         return PlayerDataManager.getPlayerData(impersonation.uniqueId, impersonation.name)

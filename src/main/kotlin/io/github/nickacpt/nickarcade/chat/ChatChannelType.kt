@@ -8,6 +8,6 @@ enum class ChatChannelType(
     val requiredRank: HypixelPackageRank = HypixelPackageRank.NONE
 ) {
     ALL,
-    PARTY(PrefixData(NamedTextColor.AQUA)),
-    STAFF(PrefixData(NamedTextColor.BLUE), HypixelPackageRank.HELPER)
+    PARTY(PrefixData(NamedTextColor.BLUE)),
+    STAFF(PrefixData(NamedTextColor.AQUA), HypixelPackageRank.HELPER)
 }

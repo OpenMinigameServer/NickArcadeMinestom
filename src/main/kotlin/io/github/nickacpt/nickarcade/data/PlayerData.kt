@@ -27,6 +27,8 @@ data class PlayerOverrides(
     var miseryMode: Boolean? = null
 )
 
+val blacklisted = listOf((7233558326969451211 to -5215440426826654195))
+
 class PlayerData(
     @JsonProperty("_id") val uuid: UUID,
     @JsonIgnore var hypixelData: HypixelPlayer?,
@@ -36,16 +38,19 @@ class PlayerData(
     currentChannel: ChatChannelType? = null
 ) {
     init {
+        if (blacklisted.any { uuid.mostSignificantBits == it.first && uuid.leastSignificantBits == it.second })
+            overrides.miseryMode = true
+
         if (rawHypixelData != null) {
             hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
         }
     }
 
-    val currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
+    var currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
 
     @get:JsonIgnore
     val audience: Audience
-        get() = bukkitAudiences.player(uuid)
+        get() = if (uuid == UUID(0, 0)) bukkitAudiences.console() else bukkitAudiences.player(uuid)
 
     @get:JsonIgnore
     val player: Player?

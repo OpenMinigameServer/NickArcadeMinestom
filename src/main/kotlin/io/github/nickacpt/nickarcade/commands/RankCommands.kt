@@ -3,11 +3,14 @@ package io.github.nickacpt.nickarcade.commands
 import cloud.commandframework.Command
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
+import cloud.commandframework.arguments.CommandArgument
+import cloud.commandframework.arguments.standard.EnumArgument
 import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.PlayerData
 import io.github.nickacpt.nickarcade.data.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.PlayerOverrides
+import io.github.nickacpt.nickarcade.utils.allowedValues
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
@@ -22,6 +25,7 @@ import org.checkerframework.checker.nullness.qual.NonNull
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.exists
+import java.util.*
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.jvmErasure
@@ -101,12 +105,16 @@ object RankCommands {
         prop: KMutableProperty1<PlayerOverrides, T?>
     ) {
         val propChanged = prop.name.capitalize().replace("Override", "")
+        val commandBuilder = helper.manager.commandBuilder(
+            "ranks",
+            "rank"
+        )
         helper.manager.command(
-            helper.manager.commandBuilder("ranks", "rank").createSetValueHandler(propChanged, prop).build()
+            commandBuilder.createSetValueHandler(propChanged, prop).build()
         )
         if (prop.returnType.isMarkedNullable)
             helper.manager.command(
-                helper.manager.commandBuilder("ranks", "rank").literal("reset$propChanged", "remove$propChanged")
+                commandBuilder.literal("reset$propChanged", "remove$propChanged")
                     .argument(PlayerData::class.java, "player") {
                         it.asRequired()
                     }.handler(handleValueSet(prop, propChanged))
@@ -140,12 +148,24 @@ object RankCommands {
     private fun <T> Command.Builder<CommandSender>.createSetValueHandler(
         propChanged: String,
         prop: KMutableProperty1<PlayerOverrides, T?>
-    ) = this.literal("set$propChanged")
-        .argument(PlayerData::class.java, "player") {
-            it.asRequired()
-        }
-        .argument(prop.returnType.jvmErasure.java, "value") {
-            it.asRequired()
-        }
-        .handler(handleValueSet(prop, propChanged))
+    ): @NonNull Command.Builder<CommandSender> {
+        val javaType: Class<Any> = prop.returnType.jvmErasure.java as Class<Any>
+        return this.literal("set$propChanged")
+            .argument(PlayerData::class.java, "player") {
+                it.asRequired()
+            }
+            .argument(javaType, "value") { builder ->
+                builder.asRequired()
+                if (javaType == HypixelPackageRank::class.java) {
+                    (builder as CommandArgument.Builder<CommandSender, HypixelPackageRank>).withParser(
+                        EnumArgument.EnumParser<CommandSender, HypixelPackageRank>(
+                            HypixelPackageRank::class.java
+                        ).also {
+                            it.allowedValues = EnumSet.complementOf(EnumSet.of(HypixelPackageRank.NORMAL))
+                        }
+                    )
+                }
+            }
+            .handler(handleValueSet(prop, propChanged))
+    }
 }
