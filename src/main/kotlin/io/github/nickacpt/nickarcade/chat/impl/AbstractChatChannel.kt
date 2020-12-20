@@ -15,6 +15,8 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 
 abstract class AbstractChatChannel(val type: ChatChannelType) {
+    open val showActualValues: Boolean = false
+
     abstract suspend fun getRecipients(sender: PlayerData, message: String): Audience
 
     open suspend fun getPlayerRateLimit(sender: PlayerData): Duration = Duration.ZERO
@@ -57,13 +59,14 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         }
         val recipients = getRecipients(sender, message)
 
+        val showActualData = showActualValues
         recipients.sendMessage(
             Identity.identity(sender.uuid),
             formatMessage(
                 sender,
-                text(sender.getChatName()),
+                text(sender.getChatName(showActualData)),
                 processChatMessage(sender, text(message))
-            ).asComponent().hoverEvent(sender.computeHoverEventComponent())
+            ).asComponent().hoverEvent(sender.computeHoverEventComponent(showActualData))
         )
     }
 

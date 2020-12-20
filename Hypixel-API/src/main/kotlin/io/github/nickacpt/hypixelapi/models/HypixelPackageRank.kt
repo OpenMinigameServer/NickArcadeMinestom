@@ -6,7 +6,7 @@ enum class HypixelPackageRank(val prefix: String, val chatMessagePrefix: String 
     NONE("§7", "§7"),
     NORMAL(NONE),
     VIP("§a[VIP] "),
-    VIP_PLUS("§a[VIP+] "),
+    VIP_PLUS("§a[VIP§6+§a] "),
     MVP("§b[MVP] "),
     MVP_PLUS("§b[MVP+] "),
     SUPERSTAR("§6[MVP++] "),

@@ -4,6 +4,7 @@ import com.destroystokyo.paper.profile.PlayerProfile
 import org.apache.commons.lang.reflect.FieldUtils.readField
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import java.util.*
 
 object NMSHelper {
     private val playerList = readField(Bukkit.getServer(), "playerList", true)
@@ -26,9 +27,15 @@ var Player.profileName: String
         playerProfile = playerProfile.also { it.name = value }
     }
 
-var Player.actualPlayerProfile: PlayerProfile
+val oldProfiles = mutableMapOf<UUID, PlayerProfile>()
+
+var Player.actualPlayerProfile: PlayerProfile?
     get() = playerProfile
     set(value) {
-        NMSHelper.replacePlayersByNameKey(profileName, value.name!!)
-        this.playerProfile = value
+        if (!oldProfiles.containsKey(uniqueId))
+            oldProfiles[uniqueId] = playerProfile
+
+        val finalProfile = value ?: oldProfiles[uniqueId]!!
+        NMSHelper.replacePlayersByNameKey(profileName, finalProfile.name!!)
+        this.playerProfile = finalProfile
     }

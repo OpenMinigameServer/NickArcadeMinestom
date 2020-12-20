@@ -9,6 +9,9 @@ import io.github.nickacpt.nickarcade.utils.filterSuspend
 import net.kyori.adventure.audience.Audience
 
 object StaffChatChannel : AbstractChatChannel(ChatChannelType.STAFF) {
+    override val showActualValues: Boolean
+        get() = true
+
     override suspend fun getRecipients(sender: PlayerData, message: String): Audience {
         return bukkitAudiences.filterSuspend {
             it.getPlayerData().hasAtLeastRank(HypixelPackageRank.HELPER)

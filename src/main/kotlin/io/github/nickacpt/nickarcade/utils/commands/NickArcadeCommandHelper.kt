@@ -3,9 +3,9 @@ package io.github.nickacpt.nickarcade.utils.commands
 import cloud.commandframework.annotations.AnnotationParser
 import cloud.commandframework.arguments.parser.ParserParameters
 import cloud.commandframework.arguments.parser.StandardParameters
-import cloud.commandframework.bukkit.BukkitCommandMetaBuilder
 import cloud.commandframework.bukkit.CloudBukkitCapabilities
 import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
+import cloud.commandframework.meta.SimpleCommandMeta
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -34,8 +34,9 @@ class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
 
             val commandMetaFunction =
                 { p: ParserParameters ->
-                    BukkitCommandMetaBuilder.builder() // This will allow you to decorate commands with descriptions
-                        .withDescription(
+                    SimpleCommandMeta.builder() // This will allow you to decorate commands with descriptions
+                        .with(
+                            SimpleCommandMeta.DESCRIPTION,
                             p.get(
                                 StandardParameters.DESCRIPTION,
                                 "No description was provided for this command"

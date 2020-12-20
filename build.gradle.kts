@@ -18,7 +18,7 @@ repositories {
     mavenCentral()
 }
 
-val cloudVersion = "1.2.0"
+val cloudVersion = "1.3.0"
 val configurateVersion = "4.0.0"
 val kMongoVersion = "4.2.3"
 val adventureVersion = "4.2.0-SNAPSHOT"

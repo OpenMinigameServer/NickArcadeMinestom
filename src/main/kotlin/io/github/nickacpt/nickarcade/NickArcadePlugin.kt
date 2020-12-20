@@ -13,6 +13,7 @@ import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
 import io.github.nickacpt.nickarcade.events.registerJoinEvents
 import io.github.nickacpt.nickarcade.events.registerLeaveEvents
 import io.github.nickacpt.nickarcade.events.registerMiseryEvents
+import io.github.nickacpt.nickarcade.events.registerPlayerDataEvents
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.event
@@ -67,6 +68,7 @@ class NickArcadePlugin : JavaPlugin() {
 
         registerJoinEvents()
         registerMiseryEvents()
+        registerPlayerDataEvents()
         registerLeaveEvents()
 
         loadProfilesManager()
@@ -140,6 +142,7 @@ fun registerFireballEvents() {
 private fun NickArcadeCommandHelper.registerCommands() {
     annotationParser.parse(TestCommands)
     annotationParser.parse(ImpersonateCommands)
+    annotationParser.parse(PartyCommands)
     annotationParser.parse(MiscCommands)
     annotationParser.parse(RankCommands)
     annotationParser.parse(ChatCommands)

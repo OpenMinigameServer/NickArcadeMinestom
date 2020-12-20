@@ -3,14 +3,11 @@ package io.github.nickacpt.nickarcade.commands
 import cloud.commandframework.Command
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
-import cloud.commandframework.arguments.CommandArgument
-import cloud.commandframework.arguments.standard.EnumArgument
 import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.PlayerData
 import io.github.nickacpt.nickarcade.data.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.PlayerOverrides
-import io.github.nickacpt.nickarcade.utils.allowedValues
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
@@ -25,7 +22,6 @@ import org.checkerframework.checker.nullness.qual.NonNull
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.exists
-import java.util.*
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.jvmErasure
@@ -39,7 +35,7 @@ object RankCommands {
     ) = command(sender, HypixelPackageRank.ADMIN) {
         sender.asAudience.sendMessage {
             text {
-                it.append(text(player.getChatName()))
+                it.append(text(player.getChatName(true)))
                 it.append(text(" is player's display on this server.", GREEN))
             }
         }
@@ -137,6 +133,8 @@ object RankCommands {
                 )
                 val message =
                     if (valueFinal != null) "Successfully set ${player.displayName}'s $changed to $valueFinal" else "Successfully reset ${player.displayName}'s $changed"
+
+                PlayerDataManager.savePlayerData(player)
                 sendSuccessMessage(
                     it.sender,
                     text(message, GREEN),
@@ -156,15 +154,15 @@ object RankCommands {
             }
             .argument(javaType, "value") { builder ->
                 builder.asRequired()
-                if (javaType == HypixelPackageRank::class.java) {
-                    (builder as CommandArgument.Builder<CommandSender, HypixelPackageRank>).withParser(
-                        EnumArgument.EnumParser<CommandSender, HypixelPackageRank>(
-                            HypixelPackageRank::class.java
-                        ).also {
-                            it.allowedValues = EnumSet.complementOf(EnumSet.of(HypixelPackageRank.NORMAL))
-                        }
-                    )
-                }
+                /*  if (javaType == HypixelPackageRank::class.java) {
+                      (builder as CommandArgument.Builder<CommandSender, HypixelPackageRank>).withParser(
+                          EnumArgument.EnumParser<CommandSender, HypixelPackageRank>(
+                              HypixelPackageRank::class.java
+                          ).also {
+                              it.allowedValues = EnumSet.complementOf(EnumSet.of(HypixelPackageRank.NORMAL))
+                          }
+                      )
+                  }*/
             }
             .handler(handleValueSet(prop, propChanged))
     }

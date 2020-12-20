@@ -24,7 +24,8 @@ data class PlayerOverrides(
     var prefixOverride: String? = null,
     var monthlyRankColorOverride: MinecraftChatColor? = null,
     var rankPlusColorOverride: MinecraftChatColor? = null,
-    var miseryMode: Boolean? = null
+    var miseryMode: Boolean? = null,
+    val networkLevel: Long? = null
 )
 
 val blacklisted = listOf((7233558326969451211 to -5215440426826654195))
@@ -35,7 +36,8 @@ class PlayerData(
     val overrides: PlayerOverrides = PlayerOverrides(),
     val rawHypixelData: JsonNode? = hypixelData?.rawJsonNode,
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
-    currentChannel: ChatChannelType? = null
+    currentChannel: ChatChannelType? = null,
+    val displayOverrides: DisplayOverrides = DisplayOverrides()
 ) {
     init {
         if (blacklisted.any { uuid.mostSignificantBits == it.first && uuid.leastSignificantBits == it.second })
@@ -64,47 +66,64 @@ class PlayerData(
     val effectivePrefix: String
         get() = computeEffectivePrefix() ?: ""
 
-    private fun computeEffectivePrefix(): String? {
-        return overrides.prefixOverride?.let { if (!it.endsWith(' ')) "$it " else it }
+    private fun computeEffectivePrefix(actualData: Boolean = false): String? {
+        val playerOverrides = if (actualData) overrides else effectivePlayerOverrides()
+        return playerOverrides.prefixOverride?.let { if (!it.endsWith(' ')) "$it " else it }
             ?: if (hypixelData != null)
                 hypixelData?.let { hypixelPlayer: HypixelPlayer ->
-                    if (overrides.monthlyRankColorOverride != null || overrides.rankPlusColorOverride != null) {
-                        return@let effectiveRank.computePrefixForPlayer(
-                            overrides.rankPlusColorOverride ?: MinecraftChatColor.RED,
-                            overrides.monthlyRankColorOverride ?: MinecraftChatColor.GOLD
+                    if (playerOverrides.monthlyRankColorOverride != null || playerOverrides.rankPlusColorOverride != null) {
+                        return@let (if (actualData) effectiveRank else effectiveDisplayRank).computePrefixForPlayer(
+                            playerOverrides.rankPlusColorOverride ?: MinecraftChatColor.RED,
+                            playerOverrides.monthlyRankColorOverride ?: MinecraftChatColor.GOLD
                         )
                     } else {
-                        return@let overrides.rankOverride?.computePrefixForPlayer(
+                        return@let playerOverrides.rankOverride?.computePrefixForPlayer(
                             hypixelPlayer
                         ) ?: hypixelData?.effectivePrefix
                     }
                 } else null
     }
 
+    private fun effectivePlayerOverrides() = displayOverrides.overrides ?: overrides
 
     @get:JsonIgnore
     val displayName: String
+        get() = displayOverrides.displayProfile?.name ?: actualDisplayName
+
+    @get:JsonIgnore
+    val actualDisplayName: String
         get() = hypixelData?.displayName ?: ""
 
     @get:JsonIgnore
     val effectiveRank: HypixelPackageRank
         get() = overrides.rankOverride ?: hypixelData?.effectiveRank ?: HypixelPackageRank.NONE
 
-    fun formatChatMessage(message: String): String {
-        return "${getChatName()}${effectiveRank.chatMessagePrefix}: $message"
-    }
+    @get:JsonIgnore
+    val effectiveDisplayRank: HypixelPackageRank
+        get() = effectivePlayerOverrides().rankOverride ?: effectiveRank
+
+    @get:JsonIgnore
+    val networkLevel: Long
+        get() = effectivePlayerOverrides().networkLevel ?: hypixelData?.networkLevel ?: 1
 
     @JsonIgnore
-    fun getChatName() = "${effectivePrefix}$displayName"
+    fun getChatName(actualData: Boolean = false) = when (actualData) {
+        true -> "${computeEffectivePrefix(true)}$actualDisplayName"
+        false -> "$effectivePrefix$displayName"
+    }
 
     fun hasAtLeastRank(rank: HypixelPackageRank): Boolean {
         return effectiveRank.ordinal >= rank.ordinal
     }
 
-    fun computeHoverEventComponent(): HoverEventSource<*> {
+    fun hasAtLeastDisplayRank(rank: HypixelPackageRank): Boolean {
+        return effectiveDisplayRank.ordinal >= rank.ordinal
+    }
+
+    fun computeHoverEventComponent(actualData: Boolean = false): HoverEventSource<*> {
         return Component.text {
             it.run {
-                append(Component.text(getChatName()))
+                append(Component.text(getChatName(actualData)))
                 append(Component.newline())
                 append(Component.text("Hypixel Level: ", NamedTextColor.GRAY))
                 append(Component.text(hypixelData?.networkLevel ?: 0, NamedTextColor.GOLD))

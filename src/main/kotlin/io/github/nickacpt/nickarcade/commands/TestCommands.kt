@@ -2,13 +2,16 @@ package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.CommandMethod
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.nickarcade.utils.actualPlayerProfile
+import io.github.nickacpt.nickarcade.data.PlayerOverrides
+import io.github.nickacpt.nickarcade.data.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
+import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
 import kotlinx.coroutines.delay
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.entity.Player
-import kotlin.time.seconds
+import java.util.*
+import kotlin.random.Random
 
 object TestCommands {
 
@@ -19,13 +22,24 @@ object TestCommands {
         sender.sendMessage(ChatColor.GREEN.toString() + "hey 5s later")
     }
 
+    val ranksRange = EnumSet.range(HypixelPackageRank.NORMAL, HypixelPackageRank.MVP_PLUS)
+
     @CommandMethod("randomprofile")
     fun testRandomProfile(sender: Player) = command(sender, HypixelPackageRank.ADMIN) {
-        while (sender.isOnline) {
-            val asPlayerProfile = ProfilesManager.profiles.random().asPlayerProfile(sender.uniqueId)
-            sender.actualPlayerProfile = asPlayerProfile
-            sender.setPlayerListName(null)
-            delay(2.5.seconds)
-        }
+        val profile = ProfilesManager.profiles.random()
+        val asPlayerProfile = profile.asPlayerProfile(sender.uniqueId)
+        val playerData = sender.getPlayerData()
+        playerData.displayOverrides.overrides =
+            PlayerOverrides(ranksRange.random(), networkLevel = Random.nextInt(1, 50).toLong())
+
+        sender.setDisplayProfile(profile, true)
+    }
+
+    @CommandMethod("randomprofile remove")
+    fun removeRandomProfile(sender: Player) = command(sender, HypixelPackageRank.ADMIN) {
+        val playerData = sender.getPlayerData()
+        playerData.displayOverrides.overrides = null
+
+        sender.setDisplayProfile(null, true)
     }
 }

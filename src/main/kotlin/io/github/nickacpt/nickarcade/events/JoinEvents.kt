@@ -1,18 +1,20 @@
 package io.github.nickacpt.nickarcade.events
 
 import com.github.shynixn.mccoroutine.launch
-import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.data.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
+import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
+import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.*
 import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.event.player.*
+import java.util.*
 
 fun registerJoinEvents() {
     blockInvalidNames()
@@ -27,19 +29,10 @@ fun registerJoinEvents() {
         }
 
         Bukkit.getPluginManager().callEvent(PlayerDataJoinEvent(playerData))
-
-        val superStarColors = listOf(ChatColor.AQUA, ChatColor.RED, ChatColor.GREEN)
-        val joinPrefix =
-            if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${superStarColors.joinToString("") { "$it>" }} " else ""
-        val joinSuffix = if (playerData.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) " ${
-            superStarColors.reversed().joinToString("") { "$it<" }
-        } " else ""
-        if (playerData.hasAtLeastRank(HypixelPackageRank.MVP_PLUS)) {
-            bukkitAudiences.all().sendMessage(
-                text("$joinPrefix${playerData.getChatName()}§6 joined the lobby!$joinSuffix").hoverEvent(playerData.computeHoverEventComponent())
-            )
-        }
+        Bukkit.getPluginManager().callEvent(PlayerDataReloadEvent(playerData))
     }
+
+
 
     event<AsyncPlayerChatEvent>
     {
@@ -49,6 +42,7 @@ fun registerJoinEvents() {
         channel.sendMessageInternal(playerData, this.message)
     }
 }
+
 
 private fun blockInvalidNames() {
     val validPattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
@@ -81,9 +75,15 @@ private fun PlayerJoinEvent.sendPlayerDataActionBar() {
 
 fun registerLeaveEvents() {
     event<PlayerQuitEvent> {
-        PlayerDataManager.saveAndRemovePlayerData(player.uniqueId)
+        handleLeave(player.uniqueId)
     }
     event<PlayerKickEvent> {
-        PlayerDataManager.saveAndRemovePlayerData(player.uniqueId)
+        handleLeave(player.uniqueId)
     }
+}
+
+private suspend fun handleLeave(playerId: UUID) {
+    val data = Bukkit.getPlayer(playerId)?.getPlayerData() ?: return
+    PlayerDataLeaveEvent(data).callEvent()
+    PlayerDataManager.saveAndRemovePlayerData(playerId)
 }
