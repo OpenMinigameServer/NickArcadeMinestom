@@ -4,7 +4,7 @@ import io.github.nickacpt.nickarcade.data.PlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
-class PlayerDataLeaveEvent(val player: PlayerData) : Event() {
+class PlayerDataLeaveEvent(val player: PlayerData, val isProfileReload: Boolean = false) : Event() {
     override fun getHandlers(): HandlerList {
         return handlerList
     }

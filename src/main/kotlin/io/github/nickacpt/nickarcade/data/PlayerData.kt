@@ -17,6 +17,7 @@ import net.kyori.adventure.text.event.HoverEventSource
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.permissions.PermissionAttachment
 import java.util.*
 
 data class PlayerOverrides(
@@ -37,7 +38,8 @@ class PlayerData(
     val rawHypixelData: JsonNode? = hypixelData?.rawJsonNode,
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
-    val displayOverrides: DisplayOverrides = DisplayOverrides()
+    val displayOverrides: DisplayOverrides = DisplayOverrides(),
+    @JsonIgnore var permission: PermissionAttachment? = null
 ) {
     init {
         if (blacklisted.any { uuid.mostSignificantBits == it.first && uuid.leastSignificantBits == it.second })

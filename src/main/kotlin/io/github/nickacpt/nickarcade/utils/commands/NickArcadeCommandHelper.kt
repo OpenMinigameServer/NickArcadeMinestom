@@ -6,8 +6,10 @@ import cloud.commandframework.arguments.parser.StandardParameters
 import cloud.commandframework.bukkit.CloudBukkitCapabilities
 import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
 import cloud.commandframework.meta.SimpleCommandMeta
+import io.github.nickacpt.nickarcade.utils.permission
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.function.BiFunction
 
 
 class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
@@ -49,6 +51,8 @@ class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
                 CommandSender::class.java,  /* Mapper for command meta instances */
                 commandMetaFunction
             )
+
+            setupRequiredRankAnnotation(annotationParser)
         } catch (e: Exception) {
             plugin.logger.severe("Failed to initialize the command manager")
             plugin.server.pluginManager.disablePlugin(plugin)
@@ -56,5 +60,11 @@ class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
         }
 
         return this
+    }
+
+    private fun setupRequiredRankAnnotation(annotationParser: AnnotationParser<CommandSender>) {
+        annotationParser.registerBuilderModifier(RequiredRank::class.java, BiFunction { annotation, builder ->
+            return@BiFunction builder.permission(annotation.value)
+        })
     }
 }

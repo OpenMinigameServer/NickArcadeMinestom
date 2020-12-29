@@ -18,9 +18,9 @@ suspend inline fun reloadProfile(
     reloadProfile: Boolean = false,
     code: suspend PlayerData.() -> Unit
 ) {
-    if (reloadProfile) PlayerDataLeaveEvent(data).callEvent()
+    if (reloadProfile) PlayerDataLeaveEvent(data, true).callEvent()
     code(data)
-    if (reloadProfile) PlayerDataJoinEvent(data).callEvent()
+    if (reloadProfile) PlayerDataJoinEvent(data, true).callEvent()
     if (reloadProfile) PlayerDataReloadEvent(data).callEvent()
 }
 

@@ -14,9 +14,12 @@ object NMSHelper {
             as MutableMap<String, Any>
 
     fun replacePlayersByNameKey(key: String, newKey: String) {
-        val oldValue = playersByName[key.toLowerCase()] ?: return
-        playersByName[newKey.toLowerCase()] = oldValue
-        playersByName.remove(key.toLowerCase())
+        val oldKeyLc = key.toLowerCase()
+        val newKeyLc = newKey.toLowerCase()
+        val oldValue = playersByName[oldKeyLc] ?: return
+        playersByName[newKeyLc] = oldValue
+        if (oldKeyLc != newKeyLc)
+            playersByName.remove(oldKeyLc)
     }
 }
 

@@ -11,7 +11,9 @@ import io.github.nickacpt.nickarcade.data.PlayerOverrides
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
+import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.div
+import io.github.nickacpt.nickarcade.utils.permission
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.TextComponent
@@ -28,6 +30,7 @@ import kotlin.reflect.jvm.jvmErasure
 
 object RankCommands {
 
+    @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("ranks|rank get <player>")
     fun getPlayerInfo(
         sender: CommandSender,
@@ -41,6 +44,8 @@ object RankCommands {
         }
     }
 
+
+    @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("ranks|rank list <rank>")
     fun listPlayersRanked(
         sender: CommandSender,
@@ -113,7 +118,9 @@ object RankCommands {
                 commandBuilder.literal("reset$propChanged", "remove$propChanged")
                     .argument(PlayerData::class.java, "player") {
                         it.asRequired()
-                    }.handler(handleValueSet(prop, propChanged))
+                    }
+                    .permission(HypixelPackageRank.ADMIN)
+                    .handler(handleValueSet(prop, propChanged))
                     .build()
             )
     }
@@ -135,6 +142,7 @@ object RankCommands {
                     if (valueFinal != null) "Successfully set ${player.displayName}'s $changed to $valueFinal" else "Successfully reset ${player.displayName}'s $changed"
 
                 PlayerDataManager.savePlayerData(player)
+                PlayerDataManager.reloadProfile(player)
                 sendSuccessMessage(
                     it.sender,
                     text(message, GREEN),
@@ -152,6 +160,7 @@ object RankCommands {
             .argument(PlayerData::class.java, "player") {
                 it.asRequired()
             }
+            .permission(HypixelPackageRank.ADMIN)
             .argument(javaType, "value") { builder ->
                 builder.asRequired()
                 /*  if (javaType == HypixelPackageRank::class.java) {

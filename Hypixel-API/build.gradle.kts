@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    maven
 }
 
 group = "io.github.nickacpt"
@@ -10,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
 

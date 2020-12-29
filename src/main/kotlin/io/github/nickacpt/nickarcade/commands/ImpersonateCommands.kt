@@ -8,6 +8,7 @@ import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationData
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
+import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
@@ -15,6 +16,7 @@ import org.bukkit.entity.Player
 object ImpersonateCommands {
     private val profileService = ProfileApi.getProfileService()
 
+    @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("impersonate <player>")
     fun impersonatePlayer(sender: Player, @Argument("player") nameOrUUID: String) =
         command(sender, HypixelPackageRank.ADMIN) {

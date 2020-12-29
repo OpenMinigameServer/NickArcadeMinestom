@@ -2,6 +2,7 @@
 
 package io.github.nickacpt.nickarcade.utils
 
+import cloud.commandframework.Command
 import com.github.shynixn.mccoroutine.asyncDispatcher
 import com.github.shynixn.mccoroutine.launch
 import com.github.shynixn.mccoroutine.launchAsync
@@ -9,7 +10,6 @@ import com.github.shynixn.mccoroutine.minecraftDispatcher
 import com.google.common.reflect.TypeToken
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.NickArcadePlugin
-import io.github.nickacpt.nickarcade.data.getPlayerData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
@@ -39,7 +39,7 @@ fun command(
         val isPlayer = sender is Player
         val rank = requiredRank.name.toLowerCase()
         val requiresPermission = requiredRank != HypixelPackageRank.NONE
-        val hasPermission = !isPlayer || (sender as Player).getPlayerData().hasAtLeastRank(requiredRank)
+        val hasPermission = !isPlayer || (sender as Player).hasPermission(rank)
         if (requiresPermission && !hasPermission) {
             sender.sendMessage(ChatColor.RED.toString() + "You must be $rank or higher to use this command!")
             return@runBlocking
@@ -99,4 +99,8 @@ inline fun <reified T : Event> event(
 suspend fun AudienceProvider.filterSuspend(predicate: suspend (CommandSender) -> Boolean): Audience {
     val list = Bukkit.getOnlinePlayers() + Bukkit.getConsoleSender()
     return Audience.audience(list.asFlow().filter(predicate).map { it.asAudience }.toCollection(mutableListOf()))
+}
+
+fun <C> Command.Builder<C>.permission(rank: HypixelPackageRank): Command.Builder<C> {
+    return this.permission(rank.name.toLowerCase())
 }

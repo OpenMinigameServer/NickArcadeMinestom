@@ -71,6 +71,10 @@ object PlayerDataManager {
         pluginInstance.logger.info("Saving player data for ${it.displayName} [${it.uuid}]")
         playerDataCollection.updateOneById(it.uuid, it, upsert())
     }
+
+    suspend fun reloadProfile(player: PlayerData) {
+        io.github.nickacpt.nickarcade.utils.profiles.reloadProfile(player, true) {}
+    }
 }
 
 val consoleData = PlayerData(
