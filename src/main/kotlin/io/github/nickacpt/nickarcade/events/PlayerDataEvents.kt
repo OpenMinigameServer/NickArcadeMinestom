@@ -20,7 +20,7 @@ import org.bukkit.entity.Player
 fun registerPlayerDataEvents() {
     event<PlayerDataLeaveEvent> {
         val data = player
-        var player = data.player ?: return@event
+        val player = data.player ?: return@event
 
         player.actualPlayerProfile = null
 
