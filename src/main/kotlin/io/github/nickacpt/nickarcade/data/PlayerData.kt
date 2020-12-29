@@ -1,7 +1,9 @@
 package io.github.nickacpt.nickarcade.data
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
@@ -10,6 +12,7 @@ import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
+import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.bukkitAudiences
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
@@ -31,6 +34,7 @@ data class PlayerOverrides(
 
 val blacklisted = listOf((7233558326969451211 to -5215440426826654195))
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator::class, property = "_id")
 class PlayerData(
     @JsonProperty("_id") val uuid: UUID,
     @JsonIgnore var hypixelData: HypixelPlayer?,
@@ -39,7 +43,8 @@ class PlayerData(
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
     val displayOverrides: DisplayOverrides = DisplayOverrides(),
-    @JsonIgnore var permission: PermissionAttachment? = null
+    @JsonIgnore var permission: PermissionAttachment? = null,
+    @JsonIgnore var currentParty: Party? = null
 ) {
     init {
         if (blacklisted.any { uuid.mostSignificantBits == it.first && uuid.leastSignificantBits == it.second })
@@ -131,5 +136,28 @@ class PlayerData(
                 append(Component.text(hypixelData?.networkLevel ?: 0, NamedTextColor.GOLD))
             }
         }
+    }
+
+    @JsonIgnore
+    fun getOrCreateParty(): Party {
+        if (currentParty == null) {
+            return Party(this).also { currentParty = it }
+        }
+        return currentParty as Party
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PlayerData
+
+        if (uuid != other.uuid) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return uuid.hashCode()
     }
 }
