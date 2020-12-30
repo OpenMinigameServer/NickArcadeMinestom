@@ -3,6 +3,7 @@ package io.github.nickacpt.nickarcade.chat
 import cloud.commandframework.arguments.standard.StringArgument
 import io.github.nickacpt.nickarcade.chat.impl.AbstractChatChannel
 import io.github.nickacpt.nickarcade.chat.impl.AllChatChannel
+import io.github.nickacpt.nickarcade.chat.impl.PartyChatChannel
 import io.github.nickacpt.nickarcade.chat.impl.StaffChatChannel
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
@@ -15,6 +16,7 @@ object ChatChannelsManager {
     init {
         registerChannel(defaultChannel)
         registerChannel(StaffChatChannel)
+        registerChannel(PartyChatChannel)
     }
 
     private fun registerChannel(channel: AbstractChatChannel) {
@@ -37,7 +39,11 @@ object ChatChannelsManager {
                             ) { _, _ -> mutableListOf() })
                     }.handler {
                         command(it.sender, type.requiredRank) {
-                            channel.sendMessageInternal(it.sender.getPlayerData(), it["text"])
+                            channel.sendMessageInternal(
+                                it.sender.getPlayerData(),
+                                it["text"],
+                                ChatMessageOrigin.SHORTCUT_COMMAND
+                            )
                         }
                     }
                     .build()

@@ -15,8 +15,10 @@ import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.bukkitAudiences
+import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.event.HoverEventSource
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -44,13 +46,25 @@ class PlayerData(
 
     var currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
 
+    @JsonIgnore
+    var forwardTarget: PlayerData? = null
+
     @get:JsonIgnore
     val audience: Audience
-        get() = if (uuid == UUID(0, 0)) bukkitAudiences.console() else bukkitAudiences.player(uuid)
+        get() = forwardTarget?.asRedirectAudience(actualDisplayName) ?: if (uuid == UUID(
+                0,
+                0
+            )
+        ) bukkitAudiences.console() else bukkitAudiences.player(uuid)
+
+    @JsonIgnore
+    fun asRedirectAudience(name: String): Audience {
+        return RedirectAudience(audience, text("[$name] "))
+    }
 
     @get:JsonIgnore
     val player: Player?
-        get() = Bukkit.getPlayer(uuid) ?: ImpersonationManager.getImpersonatorPlayer(uuid)
+        get() = forwardTarget?.player ?: Bukkit.getPlayer(uuid) ?: ImpersonationManager.getImpersonatorPlayer(uuid)
 
     @get:JsonIgnore
     val isOnline: Boolean

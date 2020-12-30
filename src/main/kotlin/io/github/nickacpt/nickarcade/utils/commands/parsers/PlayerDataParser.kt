@@ -43,6 +43,14 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
 
                 }
                 if (data != null) {
+                    if (PlayerDataManager.isPlayerDataLoaded(data.uuid)) {
+                        //Use the player data we already have loaded
+                        data = PlayerDataManager.getPlayerData(data.uuid, data.actualDisplayName)
+                    } else {
+                        //Store in memory first, then return.
+                        PlayerDataManager.storeInMemory(data)
+                    }
+
                     return@runBlocking ArgumentParseResult.success(data)
                 }
                 return@runBlocking ArgumentParseResult.failure(

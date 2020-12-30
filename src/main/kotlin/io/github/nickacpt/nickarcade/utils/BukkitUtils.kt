@@ -10,6 +10,7 @@ import com.github.shynixn.mccoroutine.minecraftDispatcher
 import com.google.common.reflect.TypeToken
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.NickArcadePlugin
+import io.github.nickacpt.nickarcade.utils.debugsubjects.DebugSubjectPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
@@ -51,7 +52,10 @@ fun command(
 val pluginInstance get() = NickArcadePlugin.instance
 val bukkitAudiences by lazy { BukkitAudiences.create(pluginInstance) }
 
-val CommandSender.asAudience get() = bukkitAudiences.sender(this)
+val CommandSender.asAudience
+    get() =
+        if (this is DebugSubjectPlayer) this.target.asRedirectAudience(name) else
+            bukkitAudiences.sender(this)
 
 suspend inline fun <T> async(noinline block: suspend CoroutineScope.() -> T): T =
     withContext(pluginInstance.asyncDispatcher, block)

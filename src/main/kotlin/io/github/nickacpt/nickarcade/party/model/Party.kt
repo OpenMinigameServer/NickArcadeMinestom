@@ -5,8 +5,13 @@ import com.github.shynixn.mccoroutine.launchAsync
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.separator
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import java.util.*
 import kotlin.time.minutes
@@ -14,16 +19,18 @@ import kotlin.time.minutes
 val partyExpiryTime = 1.minutes
 
 data class Party(
-    val leader: PlayerData,
+    var leader: PlayerData,
     val members: MutableList<PlayerData> = mutableListOf(),
-    val pendingInvites: MutableList<PartyPendingInvite> = mutableListOf()
+    val pendingInvites: MutableList<PlayerData> = mutableListOf()
 ) {
     fun hasPendingInvite(player: PlayerData): Boolean {
-        return pendingInvites.any { it.player == player }
+        return pendingInvites.contains(player)
     }
 
-    fun hasPendingInvite(invite: PartyPendingInvite): Boolean {
-        return pendingInvites.contains(invite)
+    fun switchOwner(newOwner: PlayerData) {
+        members.add(leader)
+        leader = newOwner
+        newOwner.currentParty = this
     }
 
     fun invitePlayer(sender: PlayerData, target: PlayerData) {
@@ -41,14 +48,8 @@ data class Party(
             return
         }
 
-        pluginInstance.launchAsync {
-            val invite = PartyPendingInvite(target)
-            pendingInvites.add(invite)
-            delay(partyExpiryTime)
-            if (hasPendingInvite(invite)) {
-                pendingInvites.remove(invite)
-            }
-        }
+        pluginInstance.launchAsync(scheduleInviteExpirationActions(sender, target))
+
         audience.sendMessage(separator(NamedTextColor.BLUE) {
             append(text(sender.getChatName(true)))
             append(text(" invited ", NamedTextColor.YELLOW))
@@ -57,7 +58,77 @@ data class Party(
             append(text(partyExpiryTime.inSeconds.toInt(), NamedTextColor.RED))
             append(text(" seconds to accept.", NamedTextColor.YELLOW))
         })
+
+        target.audience.sendMessage(separator(NamedTextColor.BLUE) {
+            append(text(sender.getChatName(true)))
+            append(text(" invited you to their party!", NamedTextColor.YELLOW))
+            append(newline())
+            val command = "/party accept ${sender.actualDisplayName}"
+            append(text {
+                it.append(text("You have ", NamedTextColor.YELLOW))
+                it.append(text(partyExpiryTime.inSeconds.toInt(), NamedTextColor.RED))
+                it.append(text(" seconds to accept.", NamedTextColor.YELLOW))
+            }.clickEvent(ClickEvent.runCommand(command))).hoverEvent(text("Click to run $command"))
+        })
     }
+
+    private fun scheduleInviteExpirationActions(
+        sender: PlayerData,
+        target: PlayerData
+    ): suspend CoroutineScope.() -> Unit = scope@{
+        pendingInvites.add(target)
+        delay(partyExpiryTime)
+        if (!hasPendingInvite(target)) {
+            return@scope
+        }
+        pendingInvites.remove(target)
+        target.audience.sendMessage(separator {
+            append(text("The party invite from ", NamedTextColor.YELLOW))
+            append(text(sender.getChatName(true)))
+            append(text(" has expired.", NamedTextColor.YELLOW))
+        })
+
+        audience.sendMessage(separator {
+            append(text("The party invite to ", NamedTextColor.YELLOW))
+            append(text(target.getChatName(true)))
+            append(text(" has expired.", NamedTextColor.YELLOW))
+        })
+    }
+
+    fun addMember(sender: PlayerData) {
+        members.add(sender)
+        sender.currentParty = this
+    }
+
+    private fun TextComponent.Builder.appendPlayerData(it: PlayerData) {
+        append(text(it.getChatName(true)))
+        append(Component.space())
+        append(text('●', if (it.isOnline) NamedTextColor.GREEN else NamedTextColor.RED))
+        append(Component.space())
+    }
+
+    fun disband() {
+        val list = members + leader
+        list.forEach {
+            it.currentParty = null
+        }
+    }
+
+    val listMessage: Component
+        get() {
+            return separator {
+                append(text("Party members (${totalMemberCount})", NamedTextColor.GOLD)); append(newline())
+                append(newline())
+                append(text("Party Leader: ", NamedTextColor.YELLOW))
+                appendPlayerData(leader); append(newline())
+                append(text("Party Members: ", NamedTextColor.YELLOW));
+                members.forEach {
+                    appendPlayerData(it)
+                }
+            }
+        }
+    val totalMemberCount: Int
+        get() = members.size + 1
 
     val id: UUID = UUID.randomUUID()
     var settings: PartySettings = PartySettings(this)

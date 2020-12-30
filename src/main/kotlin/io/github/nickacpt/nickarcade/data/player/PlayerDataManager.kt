@@ -64,6 +64,13 @@ object PlayerDataManager {
         }
     }
 
+    fun removePlayerData(uuid: UUID) {
+        val id = ImpersonationManager.getImpersonation(uuid)?.uniqueId ?: uuid
+        loadedPlayerMap[id]?.also {
+            loadedPlayerMap.remove(id)
+        }
+    }
+
     suspend fun savePlayerData(it: PlayerData) {
         //Don't save Console Player Data
         if (it.uuid == UUID(0, 0)) return
@@ -74,6 +81,10 @@ object PlayerDataManager {
 
     suspend fun reloadProfile(player: PlayerData) {
         io.github.nickacpt.nickarcade.utils.profiles.reloadProfile(player, true) {}
+    }
+
+    fun storeInMemory(data: PlayerData) {
+        loadedPlayerMap[data.uuid] = data
     }
 }
 

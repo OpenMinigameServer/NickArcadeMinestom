@@ -2,6 +2,7 @@ package io.github.nickacpt.nickarcade.events
 
 import com.github.shynixn.mccoroutine.launch
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
+import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
@@ -39,7 +40,7 @@ fun registerJoinEvents() {
         isCancelled = true
         val playerData = this.player.getPlayerData()
         val channel = ChatChannelsManager.getChannelByType(playerData.currentChannel)
-        channel.sendMessageInternal(playerData, this.message)
+        channel.sendMessageInternal(playerData, this.message, ChatMessageOrigin.CHAT)
     }
 }
 

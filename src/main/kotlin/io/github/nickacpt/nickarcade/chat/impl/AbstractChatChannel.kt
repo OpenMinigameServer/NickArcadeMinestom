@@ -3,6 +3,7 @@ package io.github.nickacpt.nickarcade.chat.impl
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.chat.ChatEmote
+import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.utils.cooldown
 import net.kyori.adventure.audience.Audience
@@ -16,6 +17,8 @@ import kotlin.time.seconds
 
 abstract class AbstractChatChannel(val type: ChatChannelType) {
     open val showActualValues: Boolean = false
+
+    open suspend fun checkSender(sender: PlayerData, origin: ChatMessageOrigin): Boolean = true
 
     abstract suspend fun getRecipients(sender: PlayerData, message: String): Audience
 
@@ -38,10 +41,12 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         }
     }
 
-    suspend fun sendMessageInternal(sender: PlayerData, message: String) {
+    suspend fun sendMessageInternal(sender: PlayerData, message: String, origin: ChatMessageOrigin) {
         var rateLimit = getPlayerRateLimit(sender)
         if (sender.overrides.miseryMode == true) rateLimit = 10.seconds
         val player = sender.player
+
+        checkSender(sender, origin)
 
         if (player != null && rateLimit > Duration.ZERO && !player.cooldown("chat-$type", rateLimit)) {
             sender.audience.sendMessage(

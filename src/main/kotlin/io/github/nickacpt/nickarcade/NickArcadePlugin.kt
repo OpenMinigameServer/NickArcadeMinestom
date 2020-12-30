@@ -36,7 +36,7 @@ class NickArcadePlugin : JavaPlugin() {
 
     private lateinit var databaseClient: CoroutineClient
     lateinit var database: CoroutineDatabase
-    private lateinit var commandManager: NickArcadeCommandHelper
+    internal lateinit var commandManager: NickArcadeCommandHelper
 
     companion object {
         lateinit var instance: NickArcadePlugin
