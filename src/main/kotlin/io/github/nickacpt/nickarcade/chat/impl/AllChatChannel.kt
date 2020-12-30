@@ -2,7 +2,7 @@ package io.github.nickacpt.nickarcade.chat.impl
 
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
-import io.github.nickacpt.nickarcade.data.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.utils.bukkitAudiences
 import net.kyori.adventure.audience.Audience
 import kotlin.time.Duration

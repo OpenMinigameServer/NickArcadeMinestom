@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils.profiles
 
-import io.github.nickacpt.nickarcade.data.PlayerData
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent

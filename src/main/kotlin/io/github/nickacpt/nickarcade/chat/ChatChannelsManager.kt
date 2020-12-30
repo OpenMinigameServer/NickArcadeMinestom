@@ -4,7 +4,7 @@ import cloud.commandframework.arguments.standard.StringArgument
 import io.github.nickacpt.nickarcade.chat.impl.AbstractChatChannel
 import io.github.nickacpt.nickarcade.chat.impl.AllChatChannel
 import io.github.nickacpt.nickarcade.chat.impl.StaffChatChannel
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 

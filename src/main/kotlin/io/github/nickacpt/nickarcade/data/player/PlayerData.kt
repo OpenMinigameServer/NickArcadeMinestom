@@ -1,4 +1,4 @@
-package io.github.nickacpt.nickarcade.data
+package io.github.nickacpt.nickarcade.data.player
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -11,6 +11,7 @@ import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
+import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.bukkitAudiences
@@ -22,17 +23,6 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionAttachment
 import java.util.*
-
-data class PlayerOverrides(
-    var rankOverride: HypixelPackageRank? = null,
-    var prefixOverride: String? = null,
-    var monthlyRankColorOverride: MinecraftChatColor? = null,
-    var rankPlusColorOverride: MinecraftChatColor? = null,
-    var miseryMode: Boolean? = null,
-    val networkLevel: Long? = null
-)
-
-val blacklisted = listOf((7233558326969451211 to -5215440426826654195))
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator::class, property = "_id")
 class PlayerData(
@@ -47,9 +37,6 @@ class PlayerData(
     @JsonIgnore var currentParty: Party? = null
 ) {
     init {
-        if (blacklisted.any { uuid.mostSignificantBits == it.first && uuid.leastSignificantBits == it.second })
-            overrides.miseryMode = true
-
         if (rawHypixelData != null) {
             hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
         }

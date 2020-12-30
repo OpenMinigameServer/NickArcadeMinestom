@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.utils
 
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player

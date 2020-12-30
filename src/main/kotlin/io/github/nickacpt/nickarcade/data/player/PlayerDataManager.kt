@@ -1,4 +1,4 @@
-package io.github.nickacpt.nickarcade.data
+package io.github.nickacpt.nickarcade.data.player
 
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer

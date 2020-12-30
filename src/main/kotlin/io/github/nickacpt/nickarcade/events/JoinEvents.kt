@@ -2,8 +2,8 @@ package io.github.nickacpt.nickarcade.events
 
 import com.github.shynixn.mccoroutine.launch
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
-import io.github.nickacpt.nickarcade.data.PlayerDataManager
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent

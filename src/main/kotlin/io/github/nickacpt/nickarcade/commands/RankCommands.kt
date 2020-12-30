@@ -5,9 +5,9 @@ import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.nickarcade.data.PlayerData
-import io.github.nickacpt.nickarcade.data.PlayerDataManager
-import io.github.nickacpt.nickarcade.data.PlayerOverrides
+import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
+import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper

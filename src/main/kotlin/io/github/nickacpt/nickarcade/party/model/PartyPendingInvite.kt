@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.party.model
 
-import io.github.nickacpt.nickarcade.data.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
 
 data class PartyPendingInvite(val player: PlayerData) {
 

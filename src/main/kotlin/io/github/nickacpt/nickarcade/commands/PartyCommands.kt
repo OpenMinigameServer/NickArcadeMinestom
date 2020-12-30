@@ -2,8 +2,8 @@ package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
-import io.github.nickacpt.nickarcade.data.PlayerData
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.text.Component.text
@@ -44,12 +44,12 @@ object PartyCommands {
         val sender = senderPlayer.getPlayerData()
         val party = sender.getOrCreateParty()
 
-        /*if (sender == target) {
+        if (sender == target) {
             sender.audience.sendMessage(separator {
                 append(text("You cannot party yourself!", NamedTextColor.RED))
             })
             return@command
-        }*/
+        }
         party.invitePlayer(sender, target)
 
 

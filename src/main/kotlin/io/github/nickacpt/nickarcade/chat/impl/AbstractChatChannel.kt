@@ -3,7 +3,7 @@ package io.github.nickacpt.nickarcade.chat.impl
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.chat.ChatEmote
-import io.github.nickacpt.nickarcade.data.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.utils.cooldown
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.identity.Identity

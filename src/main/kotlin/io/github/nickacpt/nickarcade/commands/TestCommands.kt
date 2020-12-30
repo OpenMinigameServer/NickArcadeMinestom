@@ -2,8 +2,8 @@ package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.CommandMethod
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.nickarcade.data.PlayerOverrides
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager

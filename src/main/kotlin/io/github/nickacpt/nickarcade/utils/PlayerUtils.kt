@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils
 
 import com.destroystokyo.paper.profile.PlayerProfile
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import org.bukkit.entity.Player
 import kotlin.time.Duration
 

@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.events.impl
 
-import io.github.nickacpt.nickarcade.data.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 

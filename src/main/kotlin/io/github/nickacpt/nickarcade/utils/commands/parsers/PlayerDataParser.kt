@@ -6,9 +6,9 @@ import cloud.commandframework.bukkit.parsers.PlayerArgument
 import cloud.commandframework.context.CommandContext
 import cloud.commandframework.exceptions.parsing.NoInputProvidedException
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
-import io.github.nickacpt.nickarcade.data.PlayerData
-import io.github.nickacpt.nickarcade.data.PlayerDataManager
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.div
 import io.github.nickacpt.nickarcade.utils.sync
 import kotlinx.coroutines.runBlocking

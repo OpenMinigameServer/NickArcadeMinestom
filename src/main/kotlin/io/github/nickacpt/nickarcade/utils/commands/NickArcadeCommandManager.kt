@@ -6,7 +6,7 @@ import cloud.commandframework.arguments.parser.ArgumentParser
 import cloud.commandframework.context.CommandContext
 import cloud.commandframework.execution.CommandExecutionCoordinator
 import cloud.commandframework.paper.PaperCommandManager
-import io.github.nickacpt.nickarcade.data.PlayerData
+import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.utils.commands.parsers.PlayerDataParser
 import io.leangen.geantyref.TypeToken
 import kotlinx.coroutines.runBlocking

@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.events
 
-import io.github.nickacpt.nickarcade.data.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.utils.event
 import kotlinx.coroutines.delay
