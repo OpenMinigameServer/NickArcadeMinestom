@@ -36,6 +36,7 @@ dependencies {
 
     implementation("cloud.commandframework:cloud-paper:$cloudVersion")
     implementation("cloud.commandframework:cloud-annotations:$cloudVersion")
+    implementation("cloud.commandframework:cloud-kotlin-extensions:$cloudVersion")
 
     implementation("org.spongepowered:configurate-yaml:$configurateVersion")
     implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")

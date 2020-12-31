@@ -23,12 +23,16 @@ data class Party(
     val members: MutableList<PlayerData> = mutableListOf(),
     val pendingInvites: MutableList<PlayerData> = mutableListOf()
 ) {
+    init {
+        PartyHelper.storeParty(leader.uuid, this)
+    }
+
     fun hasPendingInvite(player: PlayerData): Boolean {
         return pendingInvites.contains(player)
     }
 
     fun switchOwner(newOwner: PlayerData) {
-        members.add(leader)
+        addMember(leader)
         leader = newOwner
         newOwner.currentParty = this
     }
@@ -95,9 +99,10 @@ data class Party(
         })
     }
 
-    fun addMember(sender: PlayerData) {
-        members.add(sender)
-        sender.currentParty = this
+    fun addMember(member: PlayerData) {
+        members.add(member)
+        member.currentParty = this
+        PartyHelper.storeParty(member.uuid, this)
     }
 
     private fun TextComponent.Builder.appendPlayerData(it: PlayerData) {
@@ -110,7 +115,16 @@ data class Party(
     fun disband() {
         val list = members + leader
         list.forEach {
+            PartyHelper.removeParty(it.uuid)
             it.currentParty = null
+        }
+    }
+
+    fun restorePlayer(player: PlayerData) {
+        if (player == leader) {
+            leader = player
+        } else if (members.removeIf { it == player }) {
+            members.add(player)
         }
     }
 

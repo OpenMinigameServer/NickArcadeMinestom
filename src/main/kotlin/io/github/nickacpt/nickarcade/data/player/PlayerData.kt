@@ -17,8 +17,7 @@ import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.bukkitAudiences
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
 import net.kyori.adventure.audience.Audience
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.event.HoverEventSource
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -120,6 +119,10 @@ class PlayerData(
         false -> "$effectivePrefix$displayName"
     }
 
+    fun hasAtLeastRank(rank: HypixelPackageRank, actualData: Boolean): Boolean {
+        return actualData && hasAtLeastRank(rank) || hasAtLeastDisplayRank(rank)
+    }
+
     fun hasAtLeastRank(rank: HypixelPackageRank): Boolean {
         return effectiveRank.ordinal >= rank.ordinal
     }
@@ -129,12 +132,12 @@ class PlayerData(
     }
 
     fun computeHoverEventComponent(actualData: Boolean = false): HoverEventSource<*> {
-        return Component.text {
+        return text {
             it.run {
-                append(Component.text(getChatName(actualData)))
-                append(Component.newline())
-                append(Component.text("Hypixel Level: ", NamedTextColor.GRAY))
-                append(Component.text(hypixelData?.networkLevel ?: 0, NamedTextColor.GOLD))
+                append(text(getChatName(actualData)))
+                append(newline())
+                append(text("Hypixel Level: ", NamedTextColor.GRAY))
+                append(text(if (actualData) hypixelData?.networkLevel ?: 1 else networkLevel, NamedTextColor.GOLD))
             }
         }
     }

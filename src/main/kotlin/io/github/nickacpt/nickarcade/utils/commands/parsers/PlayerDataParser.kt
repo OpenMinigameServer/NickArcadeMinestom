@@ -26,6 +26,11 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
 
                 //Try a name
                 var data = Bukkit.getPlayer(argument)?.getPlayerData()
+                if (data != null && data.displayOverrides.displayProfile != null) {
+                    //Do not expose nicked players
+                    data = null
+                }
+
 
                 //Try a UUID
                 if (data == null) {

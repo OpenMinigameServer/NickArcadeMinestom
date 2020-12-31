@@ -16,11 +16,12 @@ suspend fun Player.getDisplayProfile(): DumpedProfile? {
 suspend inline fun reloadProfile(
     data: PlayerData,
     reloadProfile: Boolean = false,
+    rejoinProfile: Boolean = false,
     code: suspend PlayerData.() -> Unit
 ) {
-    if (reloadProfile) PlayerDataLeaveEvent(data, true).callEvent()
+    if (rejoinProfile && reloadProfile) PlayerDataLeaveEvent(data, true).callEvent()
     code(data)
-    if (reloadProfile) PlayerDataJoinEvent(data, true).callEvent()
+    if (rejoinProfile && reloadProfile) PlayerDataJoinEvent(data, true).callEvent()
     if (reloadProfile) PlayerDataReloadEvent(data).callEvent()
 }
 

@@ -16,7 +16,7 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 
 abstract class AbstractChatChannel(val type: ChatChannelType) {
-    open val showActualValues: Boolean = false
+    open val showActualValues: Boolean = type.useActualName
 
     open suspend fun checkSender(sender: PlayerData, origin: ChatMessageOrigin): Boolean = true
 
@@ -46,7 +46,7 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         if (sender.overrides.miseryMode == true) rateLimit = 10.seconds
         val player = sender.player
 
-        checkSender(sender, origin)
+        if (!checkSender(sender, origin)) return
 
         if (player != null && rateLimit > Duration.ZERO && !player.cooldown("chat-$type", rateLimit)) {
             sender.audience.sendMessage(
@@ -64,20 +64,19 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         }
         val recipients = getRecipients(sender, message)
 
-        val showActualData = showActualValues
         recipients.sendMessage(
             Identity.identity(sender.uuid),
             formatMessage(
                 sender,
-                text(sender.getChatName(showActualData)),
+                text(sender.getChatName(showActualValues)),
                 processChatMessage(sender, text(message))
-            ).asComponent().hoverEvent(sender.computeHoverEventComponent(showActualData))
+            ).asComponent().hoverEvent(sender.computeHoverEventComponent(showActualValues))
         )
     }
 
     open fun processChatMessage(sender: PlayerData, message: Component): Component {
         var modifiedMessage = message
-        if (sender.hasAtLeastRank(HypixelPackageRank.SUPERSTAR)) {
+        if (sender.hasAtLeastRank(HypixelPackageRank.SUPERSTAR, showActualValues)) {
             modifiedMessage = processEmotes(modifiedMessage)
         }
         return modifiedMessage

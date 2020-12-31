@@ -2,8 +2,10 @@ package io.github.nickacpt.nickarcade.events
 
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
+import io.github.nickacpt.nickarcade.party.model.PartyHelper
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.removePlayerInfo
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setPlayerInfo
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setupOwnScoreboard
@@ -18,6 +20,17 @@ import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
 fun registerPlayerDataEvents() {
+
+    event<PlayerDataJoinEvent> {
+        val data = player
+
+        //Restore current party
+        data.currentParty = PartyHelper.getCachedParty(player.uuid)
+
+        //Also restore player instance because PlayerData is a difference object now
+        data.currentParty?.restorePlayer(data)
+    }
+
     event<PlayerDataLeaveEvent> {
         val data = player
         val player = data.player ?: return@event
