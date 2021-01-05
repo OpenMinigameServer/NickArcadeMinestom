@@ -27,6 +27,7 @@ object PlayerDataManager {
 
     private suspend fun fetchHypixelPlayerData(id: UUID, name: String): HypixelPlayer {
         val tryGetPlayerById = pluginInstance.hypixelPlayerInfoHelper.tryGetPlayerById(id)
+
         return if (tryGetPlayerById != null) {
             pluginInstance.logger.info("Fetched Hypixel Player Data for $name [$id] successfully.")
             tryGetPlayerById

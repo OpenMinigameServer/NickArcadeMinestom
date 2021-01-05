@@ -53,6 +53,9 @@ private fun blockInvalidNames() {
         if (!isValidName) {
             kickMessage = "You are using an invalid Minecraft name and thus you got denied access."
             loginResult = AsyncPlayerPreLoginEvent.Result.KICK_BANNED
+        } else if (PlayerDataManager.isPlayerDataLoaded(this.uniqueId)) {
+            kickMessage = "Please wait while we save your data to join again."
+            loginResult = AsyncPlayerPreLoginEvent.Result.KICK_OTHER
         }
     }
 }

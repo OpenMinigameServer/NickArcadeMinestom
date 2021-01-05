@@ -12,7 +12,7 @@ enum class HypixelPackageRank(val prefix: String, val chatMessagePrefix: String 
     SUPERSTAR("§6[MVP++] "),
     YOUTUBER("§c[§rYOUTUBE§c] "),
     HELPER("§9[HELPER] "),
-    MODERATOR("§4[MOD] "),
+    MODERATOR("§2[MOD] "),
     ADMIN("§c[ADMIN] ");
 
     fun computePrefixForPlayer(player: HypixelPlayer): String {

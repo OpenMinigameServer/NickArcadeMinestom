@@ -1,6 +1,10 @@
 package io.github.nickacpt.nickarcade.events
 
+import com.destroystokyo.paper.profile.PlayerProfile
+import com.destroystokyo.paper.profile.ProfileProperty
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
+import io.github.nickacpt.hypixelapi.utis.profile.Profile
+import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
@@ -35,7 +39,7 @@ fun registerPlayerDataEvents() {
         val data = player
         val player = data.player ?: return@event
 
-        player.actualPlayerProfile = null
+        player.actualPlayerProfile = ProfileApi.getProfileService().findById(player.uniqueId)?.toPlayerProfile()
 
         Bukkit.getOnlinePlayers().forEach {
             it.removePlayerInfo(data.displayName)
@@ -52,6 +56,16 @@ fun registerPlayerDataEvents() {
         updateNewPlayerTeamForOnlinePlayers(bukkitPlayer)
 
         showLobbyMessage()
+    }
+}
+
+private fun Profile.toPlayerProfile(): PlayerProfile {
+    return Bukkit.createProfile(uuid, name).also { bukkitProfile ->
+        val raw = this.textures?.raw
+        if (raw != null) {
+            bukkitProfile.properties.add(ProfileProperty("textures", raw.value, raw.signature))
+        }
+        bukkitProfile.name = this.name
     }
 }
 

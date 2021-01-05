@@ -19,6 +19,8 @@ object NMSHelper {
         playersByName[newKeyLc] = oldValue
         if (oldKeyLc != newKeyLc)
             playersByName.remove(oldKeyLc)
+
+
     }
 }
 
