@@ -1,24 +1,34 @@
 package io.github.nickacpt.nickarcade.application
 
-import io.github.nickacpt.nickarcade.NickArcadeExtension
 import net.minestom.server.MinecraftServer
 import net.minestom.server.entity.GameMode
 import net.minestom.server.event.player.PlayerLoginEvent
-import net.minestom.server.extras.MojangAuth
+import net.minestom.server.extras.PlacementRules
+import net.minestom.server.extras.selfmodification.MinestomRootClassLoader
 import net.minestom.server.instance.Chunk
 import net.minestom.server.instance.ChunkGenerator
 import net.minestom.server.instance.ChunkPopulator
 import net.minestom.server.instance.batch.ChunkBatch
 import net.minestom.server.instance.block.Block
+import net.minestom.server.instance.block.rule.vanilla.WallPlacementRule
 import net.minestom.server.utils.Position
 import net.minestom.server.world.biomes.Biome
 import java.util.*
 
 fun main(args: Array<String>) {
-    val server = MinecraftServer.init()
-    MojangAuth.init()
-    val instanceManager = MinecraftServer.getInstanceManager()
+    MinestomRootClassLoader.getInstance().protectedPackages.addAll(
+        arrayOf(
+            "org.reactivestreams",
+            "io.leangen.geantyref",
+            "kotlinx"
+        )
+    )
 
+    val server = MinecraftServer.init()
+//    MojangAuth.init()
+    PlacementRules.init()
+    MinecraftServer.getBlockManager().registerBlockPlacementRule(WallPlacementRule(Block.CRIMSON_BUTTON))
+    val instanceManager = MinecraftServer.getInstanceManager()
 
     // Create the instance
     val instanceContainer = instanceManager.createInstanceContainer()
@@ -50,6 +60,7 @@ fun main(args: Array<String>) {
         PlayerLoginEvent::class.java
     ) { event: PlayerLoginEvent ->
         val player = event.player
+
         player.isAllowFlying = true
         player.gameMode = GameMode.CREATIVE
 
@@ -57,11 +68,6 @@ fun main(args: Array<String>) {
         player.respawnPoint = Position(0f, 55.0f, 0f)
     }
 
-    val arcade = NickArcadeExtension()
-    arcade.onEnable()
-
-    val kClass = org.reactivestreams.Publisher::class.java
-    kClass.classLoader
     server.start(
         "0.0.0.0", 25565
     ) { connection, responseData ->

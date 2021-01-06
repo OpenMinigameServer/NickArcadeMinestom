@@ -14,16 +14,16 @@ import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
-import io.github.nickacpt.nickarcade.utils.interop.logger
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import net.minestom.server.MinecraftServer
+import net.minestom.server.extensions.Extension
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import java.io.File
 import java.util.*
 
 
-class NickArcadeExtension {
+class NickArcadeExtension : Extension() {
     val dataFolder
         get() = File(
             MinecraftServer.getExtensionManager().extensionFolder,
@@ -41,7 +41,7 @@ class NickArcadeExtension {
     lateinit var service: HypixelService
     lateinit var hypixelPlayerInfoHelper: HypixelPlayerInfoHelper
 
-    fun walterProfile(id: UUID, name: String): PlayerProfile {
+    public fun walterProfile(id: UUID, name: String): PlayerProfile {
         return PlayerProfile(id, name).apply {
             properties.add(
                 ProfileProperty(
@@ -53,9 +53,10 @@ class NickArcadeExtension {
         }
     }
 
-    fun onEnable() {
+    override fun initialize() {
         instance = this
         commandManager = NickArcadeCommandHelper().init()
+
 
         initMainConfig()
         initHypixelServices() ?: disablePlugin("Unable to initialize Hypixel services")
@@ -108,7 +109,8 @@ class NickArcadeExtension {
         database = databaseClient.getDatabase(mainConfiguration.mongoDbConfiguration.database)
     }
 
-    fun onDisable() {
+    override fun terminate() {
+
     }
 }
 

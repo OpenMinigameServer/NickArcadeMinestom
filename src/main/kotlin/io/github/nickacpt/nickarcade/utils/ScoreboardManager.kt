@@ -15,11 +15,11 @@ object ScoreboardManager {
     suspend fun Player.setupOwnScoreboard() {
         MinecraftServer.getConnectionManager().onlinePlayers.forEach {
             val joinedPlayer = it
-            setPlayerInfo(joinedPlayer)
+            setPlayerInfo(this, joinedPlayer)
         }
     }
 
-    suspend fun Player.setPlayerInfo(joinedPlayer: Player) {
+    suspend fun setPlayerInfo(receiver: Player, joinedPlayer: Player) {
         val data = joinedPlayer.getPlayerData()
 
         val playerName = data.displayName

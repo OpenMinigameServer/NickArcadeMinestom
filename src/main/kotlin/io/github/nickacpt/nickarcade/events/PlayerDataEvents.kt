@@ -94,6 +94,6 @@ private fun PlayerDataReloadEvent.showLobbyMessage() {
 
 private suspend fun updateNewPlayerTeamForOnlinePlayers(joinedPlayer: Player) {
     MinecraftServer.getConnectionManager().onlinePlayers.forEach {
-        it.setPlayerInfo(joinedPlayer)
+        setPlayerInfo(it, joinedPlayer)
     }
 }

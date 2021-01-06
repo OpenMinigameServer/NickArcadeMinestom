@@ -12,7 +12,6 @@ import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.debugsubjects.DebugSubjectPlayer
-import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
@@ -31,7 +30,6 @@ object TestCommands {
     @CommandMethod("randomprofile")
     fun testRandomProfile(sender: Player) = command(sender, HypixelPackageRank.ADMIN) {
         val profile = ProfilesManager.profiles.random()
-        val asPlayerProfile = profile.asPlayerProfile(sender.uniqueId)
         val playerData = sender.getPlayerData()
         playerData.displayOverrides.overrides =
             PlayerOverrides(ranksRange.random(), networkLevel = Random.nextInt(1, 50).toLong())

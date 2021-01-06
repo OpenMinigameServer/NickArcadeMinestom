@@ -1,0 +1,7 @@
+{
+  "name": "NickArcade",
+  "entrypoint": "io.github.nickacpt.nickarcade.NickArcadeExtension",
+  "authors": [
+    "NickAc"
+  ]
+}

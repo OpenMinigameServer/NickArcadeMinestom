@@ -11,8 +11,8 @@ data class DumpedProfile(
     val uuid: UUID,
     val properties: Map<String, List<DumpedProperty>>
 ) {
-    fun asPlayerProfile(id: UUID): PlayerProfile {
-        val profile = PlayerProfile(id, name)
+    fun asPlayerProfile(id: UUID? = null): PlayerProfile {
+        val profile = PlayerProfile(id ?: uuid, name)
         profile.properties.addAll(
             properties.values.first().map { ProfileProperty(it.name, it.value, it.signature) })
         return profile.apply { this.name = this@DumpedProfile.name }

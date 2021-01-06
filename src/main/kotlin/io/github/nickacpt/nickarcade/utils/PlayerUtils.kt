@@ -1,6 +1,7 @@
 package io.github.nickacpt.nickarcade.utils
 
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
+import io.github.nickacpt.nickarcade.AlternateIdContainer
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.events.toPlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
@@ -35,8 +36,10 @@ var Player.playerProfile: PlayerProfile
             properties.add(ProfileProperty("textures", skin.textures, skin.signature))
         } else {
             runBlocking {
-                ProfileApi.getProfileService().findById(uuid)?.toPlayerProfile()?.properties?.let {
-                    properties.addAll(it)
+                kotlin.runCatching {
+                    ProfileApi.getProfileService().findById(uuid)?.toPlayerProfile()?.properties?.let {
+                        properties.addAll(it)
+                    }
                 }
             }
         }
@@ -49,6 +52,9 @@ var Player.playerProfile: PlayerProfile
         if (properties.isNotEmpty()) {
             val (_, value1, signature) = properties.stream().findFirst().get()
             skin = PlayerSkin(value1, signature)
+            if (this is AlternateIdContainer) {
+                this.alternateUuid = value.uuid!!
+            }
         }
     }
 

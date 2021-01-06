@@ -21,6 +21,7 @@ import net.minestom.server.command.CommandSender
 import net.minestom.server.entity.Player
 import net.minestom.server.event.CancellableEvent
 import net.minestom.server.event.Event
+import net.minestom.server.event.player.AsyncPlayerPreLoginEvent
 
 fun command(
     sender: CommandSender,
@@ -57,7 +58,7 @@ suspend inline fun <T> sync(noinline block: suspend CoroutineScope.() -> T): T =
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : Event> event(
-    ignoreCancelled: Boolean = false, forceAsync: Boolean = false,
+    ignoreCancelled: Boolean = false, forceAsync: Boolean = false, forceBlocking: Boolean = false,
     noinline code: suspend T.(CoroutineScope) -> Unit
 ) {
     MinecraftServer.getGlobalEventHandler().addEventCallback(T::class.java) {
@@ -65,10 +66,15 @@ inline fun <reified T : Event> event(
             if (it is CancellableEvent && ignoreCancelled && it.isCancelled) return@scope
             code(it, this)
         }
-        if (forceAsync)
+        if (forceBlocking || it is AsyncPlayerPreLoginEvent) {
+            runBlocking { block(this) }
+            return@addEventCallback
+        }
+        if (forceAsync) {
             pluginInstance.async(block)
-        else
+        } else {
             pluginInstance.launch(block)
+        }
     }
 }
 

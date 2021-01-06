@@ -1,5 +1,6 @@
 package io.github.nickacpt.nickarcade.events
 
+import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
@@ -10,19 +11,34 @@ import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.interop.callEvent
 import io.github.nickacpt.nickarcade.utils.interop.launch
+import io.github.nickacpt.nickarcade.utils.interop.name
 import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.MinecraftServer
-import net.minestom.server.event.player.AsyncPlayerPreLoginEvent
-import net.minestom.server.event.player.PlayerChatEvent
-import net.minestom.server.event.player.PlayerDisconnectEvent
-import net.minestom.server.event.player.PlayerLoginEvent
+import net.minestom.server.event.player.*
 import java.util.*
 
 fun registerJoinEvents() {
+    MinecraftServer.getConnectionManager().setUuidProvider { playerConnection, username ->
+        return@setUuidProvider runBlocking {
+            runCatching { ProfileApi.getProfileByName(username)?.uniqueId }.getOrNull() ?: UUID.randomUUID()
+        }
+    }
+
+    event<PlayerSkinInitEvent>(forceBlocking = true) {
+        val profile = ProfileApi.getProfileByName(this.player.name) ?: return@event
+//
+//        val properties: List<ProfileProperty> = profile.toPlayerProfile().properties
+//        if (properties.isNotEmpty()) {
+//            val (_, value1, signature) = properties.stream().findFirst().get()
+//            skin = PlayerSkin(value1, signature)
+//        }
+        player.skin = profile.toPlayerProfile().toSkin()
+    }
     blockInvalidNames()
 
     event<PlayerLoginEvent> {
@@ -40,6 +56,7 @@ fun registerJoinEvents() {
 
     cancelEvent<PlayerChatEvent>
     {
+        player.skin = pluginInstance.walterProfile(player.uniqueId, player.name).toSkin()
         val playerData = this.player.getPlayerData()
         val channel = ChatChannelsManager.getChannelByType(playerData.currentChannel)
         channel.sendMessageInternal(playerData, this.message, ChatMessageOrigin.CHAT)
