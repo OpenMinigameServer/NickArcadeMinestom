@@ -1,12 +1,13 @@
 package io.github.nickacpt.nickarcade.utils
 
-import org.bukkit.metadata.FixedMetadataValue
-import org.bukkit.metadata.Metadatable
+import net.minestom.server.entity.Player
 
-fun Metadatable.scope(name: String, code: () -> Unit) {
-    if (hasMetadata(name)) return
+
+fun Player.scope(name: String, code: () -> Unit) {
+    val data = this.data ?: return
+    if (data.hasKey(name)) return
     val metadataKey = "scope-$name"
-    this.setMetadata(metadataKey, FixedMetadataValue(pluginInstance, true))
+    data.set(metadataKey, true)
     code()
-    removeMetadata(metadataKey, pluginInstance)
+    data.set(metadataKey, null)
 }

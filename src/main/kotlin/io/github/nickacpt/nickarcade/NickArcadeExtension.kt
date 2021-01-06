@@ -1,8 +1,5 @@
 package io.github.nickacpt.nickarcade
 
-import com.destroystokyo.paper.MaterialTags
-import com.destroystokyo.paper.profile.PlayerProfile
-import com.destroystokyo.paper.profile.ProfileProperty
 import io.github.nickacpt.hypixelapi.HypixelService
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
 import io.github.nickacpt.hypixelapi.utis.HypixelPlayerInfoHelper
@@ -12,41 +9,40 @@ import io.github.nickacpt.nickarcade.data.MongoDbConnectionHelper
 import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
 import io.github.nickacpt.nickarcade.events.registerJoinEvents
 import io.github.nickacpt.nickarcade.events.registerLeaveEvents
-import io.github.nickacpt.nickarcade.events.registerMiseryEvents
 import io.github.nickacpt.nickarcade.events.registerPlayerDataEvents
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
-import io.github.nickacpt.nickarcade.utils.event
+import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
+import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
+import io.github.nickacpt.nickarcade.utils.interop.logger
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
-import io.github.nickacpt.nickarcade.utils.scope
-import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.entity.EntityType
-import org.bukkit.entity.Fireball
-import org.bukkit.event.block.Action
-import org.bukkit.event.entity.EntityExplodeEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.plugin.java.JavaPlugin
+import net.minestom.server.MinecraftServer
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import java.io.File
 import java.util.*
 
-class NickArcadePlugin : JavaPlugin() {
+
+class NickArcadeExtension {
+    val dataFolder
+        get() = File(
+            MinecraftServer.getExtensionManager().extensionFolder,
+            this.javaClass.simpleName.removeSuffix("Extension")
+        )
 
     private lateinit var databaseClient: CoroutineClient
     lateinit var database: CoroutineDatabase
     internal lateinit var commandManager: NickArcadeCommandHelper
 
     companion object {
-        lateinit var instance: NickArcadePlugin
+        lateinit var instance: NickArcadeExtension
     }
 
     lateinit var service: HypixelService
     lateinit var hypixelPlayerInfoHelper: HypixelPlayerInfoHelper
 
     fun walterProfile(id: UUID, name: String): PlayerProfile {
-        return Bukkit.createProfile(id, name).apply {
+        return PlayerProfile(id, name).apply {
             properties.add(
                 ProfileProperty(
                     "textures",
@@ -57,9 +53,9 @@ class NickArcadePlugin : JavaPlugin() {
         }
     }
 
-    override fun onEnable() {
+    fun onEnable() {
         instance = this
-        commandManager = NickArcadeCommandHelper(this).init() ?: disablePlugin("Unable to initialize command manager")
+        commandManager = NickArcadeCommandHelper().init()
 
         initMainConfig()
         initHypixelServices() ?: disablePlugin("Unable to initialize Hypixel services")
@@ -67,7 +63,6 @@ class NickArcadePlugin : JavaPlugin() {
         commandManager.registerCommands()
 
         registerJoinEvents()
-        registerMiseryEvents()
         registerPlayerDataEvents()
         registerLeaveEvents()
 
@@ -83,7 +78,6 @@ class NickArcadePlugin : JavaPlugin() {
     }
 
     private fun disablePlugin(reason: String): Nothing {
-        server.pluginManager.disablePlugin(this)
         throw Exception("Unable to initialize plugin! Reason: $reason")
     }
 
@@ -114,13 +108,13 @@ class NickArcadePlugin : JavaPlugin() {
         database = databaseClient.getDatabase(mainConfiguration.mongoDbConfiguration.database)
     }
 
-    override fun onDisable() {
+    fun onDisable() {
     }
 }
 
 fun registerFireballEvents() {
 
-    event<EntityExplodeEvent> {
+    /*event<EntityExplodeEvent> {
         if (this.entityType != EntityType.FIREBALL) return@event
         blockList().removeIf { MaterialTags.STAINED_GLASS.isTagged(it) }
     }
@@ -136,7 +130,7 @@ fun registerFireballEvents() {
                 velocity = direction.multiply(5)
             }
         }
-    }
+    }*/
 }
 
 private fun NickArcadeCommandHelper.registerCommands() {

@@ -13,7 +13,6 @@ import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.format.NamedTextColor
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 abstract class AbstractChatChannel(val type: ChatChannelType) {
     open val showActualValues: Boolean = type.useActualName
@@ -43,7 +42,6 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
 
     suspend fun sendMessageInternal(sender: PlayerData, message: String, origin: ChatMessageOrigin) {
         var rateLimit = getPlayerRateLimit(sender)
-        if (sender.overrides.miseryMode == true) rateLimit = 10.seconds
         val player = sender.player
 
         if (!checkSender(sender, origin)) return

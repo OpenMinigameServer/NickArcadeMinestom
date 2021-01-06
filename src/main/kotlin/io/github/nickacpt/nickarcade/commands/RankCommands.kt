@@ -18,8 +18,8 @@ import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor.GREEN
-import org.apache.commons.lang.StringUtils
-import org.bukkit.command.CommandSender
+import net.minestom.server.command.CommandSender
+import org.apache.commons.lang3.StringUtils
 import org.checkerframework.checker.nullness.qual.NonNull
 import org.litote.kmongo.and
 import org.litote.kmongo.eq

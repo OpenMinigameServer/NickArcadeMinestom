@@ -1,6 +1,5 @@
 package io.github.nickacpt.nickarcade.events
 
-import com.github.shynixn.mccoroutine.launch
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
@@ -9,35 +8,38 @@ import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.*
+import io.github.nickacpt.nickarcade.utils.interop.callEvent
+import io.github.nickacpt.nickarcade.utils.interop.launch
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import org.bukkit.Bukkit
-import org.bukkit.event.player.*
+import net.minestom.server.MinecraftServer
+import net.minestom.server.event.player.AsyncPlayerPreLoginEvent
+import net.minestom.server.event.player.PlayerChatEvent
+import net.minestom.server.event.player.PlayerDisconnectEvent
+import net.minestom.server.event.player.PlayerLoginEvent
 import java.util.*
 
 fun registerJoinEvents() {
     blockInvalidNames()
 
-    event<PlayerJoinEvent> {
-        joinMessage = null
-
+    event<PlayerLoginEvent> {
         sendPlayerDataActionBar()
 
         val playerData = async {
             player.getPlayerData()
         }
 
-        Bukkit.getPluginManager().callEvent(PlayerDataJoinEvent(playerData))
-        Bukkit.getPluginManager().callEvent(PlayerDataReloadEvent(playerData))
+        callEvent(PlayerDataJoinEvent(playerData))
+        callEvent(PlayerDataReloadEvent(playerData))
     }
 
 
 
-    event<AsyncPlayerChatEvent>
+    cancelEvent<PlayerChatEvent>
     {
-        isCancelled = true
         val playerData = this.player.getPlayerData()
         val channel = ChatChannelsManager.getChannelByType(playerData.currentChannel)
         channel.sendMessageInternal(playerData, this.message, ChatMessageOrigin.CHAT)
@@ -48,19 +50,17 @@ fun registerJoinEvents() {
 private fun blockInvalidNames() {
     val validPattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
     event<AsyncPlayerPreLoginEvent> {
-        val isValidName = validPattern.matchEntire(this.name) != null
+        val isValidName = validPattern.matchEntire(this.username) != null
 
         if (!isValidName) {
-            kickMessage = "You are using an invalid Minecraft name and thus you got denied access."
-            loginResult = AsyncPlayerPreLoginEvent.Result.KICK_BANNED
-        } else if (PlayerDataManager.isPlayerDataLoaded(this.uniqueId)) {
-            kickMessage = "Please wait while we save your data to join again."
-            loginResult = AsyncPlayerPreLoginEvent.Result.KICK_OTHER
+            player.kick("You are using an invalid Minecraft name and thus you got denied access.")
+        } else if (PlayerDataManager.isPlayerDataLoaded(this.playerUuid)) {
+            player.kick("Please wait while we save your data to join again.")
         }
     }
 }
 
-private fun PlayerJoinEvent.sendPlayerDataActionBar() {
+private fun PlayerLoginEvent.sendPlayerDataActionBar() {
     pluginInstance.launch {
         val audience = player.asAudience
         while (!PlayerDataManager.isPlayerDataLoaded(player.uniqueId)) {
@@ -78,16 +78,13 @@ private fun PlayerJoinEvent.sendPlayerDataActionBar() {
 }
 
 fun registerLeaveEvents() {
-    event<PlayerQuitEvent> {
-        handleLeave(player.uniqueId)
-    }
-    event<PlayerKickEvent> {
+    event<PlayerDisconnectEvent> {
         handleLeave(player.uniqueId)
     }
 }
 
 private suspend fun handleLeave(playerId: UUID) {
-    val data = Bukkit.getPlayer(playerId)?.getPlayerData() ?: return
+    val data = MinecraftServer.getConnectionManager().getPlayer(playerId)?.getPlayerData() ?: return
     PlayerDataLeaveEvent(data).callEvent()
     PlayerDataManager.saveAndRemovePlayerData(playerId)
 }

@@ -1,8 +1,8 @@
 package io.github.nickacpt.nickarcade.party.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.github.shynixn.mccoroutine.launchAsync
 import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.utils.interop.async
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.separator
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +52,7 @@ data class Party(
             return
         }
 
-        pluginInstance.launchAsync(scheduleInviteExpirationActions(sender, target))
+        pluginInstance.async(scheduleInviteExpirationActions(sender, target))
 
         audience.sendMessage(separator(NamedTextColor.BLUE) {
             append(text(sender.getChatName(true)))

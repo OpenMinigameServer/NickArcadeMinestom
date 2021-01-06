@@ -9,9 +9,10 @@ import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.entity.Player
+import net.minestom.server.entity.Player
 
 object ImpersonateCommands {
     private val profileService = ProfileApi.getProfileService()
@@ -59,7 +60,7 @@ object ImpersonateCommands {
     }
 
     private fun logoutPlayer(sender: Player) {
-        sender.kickPlayer("Please reconnect to finish applying impersonation!")
+        sender.kick("Please reconnect to finish applying impersonation!")
     }
 
 }

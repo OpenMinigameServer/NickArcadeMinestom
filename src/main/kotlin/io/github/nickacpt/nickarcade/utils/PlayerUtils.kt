@@ -1,8 +1,17 @@
 package io.github.nickacpt.nickarcade.utils
 
-import com.destroystokyo.paper.profile.PlayerProfile
+import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
-import org.bukkit.entity.Player
+import io.github.nickacpt.nickarcade.events.toPlayerProfile
+import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
+import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
+import io.github.nickacpt.nickarcade.utils.interop.name
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
+import kotlinx.coroutines.runBlocking
+import net.minestom.server.entity.Player
+import net.minestom.server.entity.PlayerSkin
+import org.apache.commons.lang3.reflect.FieldUtils
+import java.util.*
 import kotlin.time.Duration
 
 suspend fun Player.cooldown(name: String, cooldownDuration: Duration, code: (suspend () -> Unit)? = null): Boolean {
@@ -16,6 +25,33 @@ suspend fun Player.cooldown(name: String, cooldownDuration: Duration, code: (sus
     } else false
 }
 
+val oldProfiles = mutableMapOf<UUID, PlayerProfile>()
+
+var Player.playerProfile: PlayerProfile
+    get() {
+        val properties = ArrayList<ProfileProperty>()
+        val skin = skin
+        if (skin != null) {
+            properties.add(ProfileProperty("textures", skin.textures, skin.signature))
+        } else {
+            runBlocking {
+                ProfileApi.getProfileService().findById(uuid)?.toPlayerProfile()?.properties?.let {
+                    properties.addAll(it)
+                }
+            }
+        }
+        return PlayerProfile(uuid, username, properties)
+
+    }
+    set(value) {
+        FieldUtils.writeDeclaredField(this, "username", value.name, true)
+        val properties: List<ProfileProperty> = value.properties
+        if (properties.isNotEmpty()) {
+            val (_, value1, signature) = properties.stream().findFirst().get()
+            skin = PlayerSkin(value1, signature)
+        }
+    }
+
 var Player.actualPlayerProfile: PlayerProfile?
     get() = playerProfile
     set(value) {
@@ -23,12 +59,10 @@ var Player.actualPlayerProfile: PlayerProfile?
             oldProfiles[uniqueId] = playerProfile
 
         val finalProfile = value ?: oldProfiles[uniqueId]!!
-        NMSHelper.replacePlayersByNameKey(profileName, finalProfile.name!!)
         this.playerProfile = finalProfile
     }
 var Player.profileName: String
     get() = playerProfile.name ?: name
     set(value) {
-        NMSHelper.replacePlayersByNameKey(profileName, value)
         playerProfile = playerProfile.also { it.name = value }
     }

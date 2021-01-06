@@ -2,17 +2,17 @@ package io.github.nickacpt.nickarcade.utils.commands.parsers
 
 import cloud.commandframework.arguments.parser.ArgumentParseResult
 import cloud.commandframework.arguments.parser.ArgumentParser
-import cloud.commandframework.bukkit.parsers.PlayerArgument
 import cloud.commandframework.context.CommandContext
-import cloud.commandframework.exceptions.parsing.NoInputProvidedException
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.div
+import io.github.nickacpt.nickarcade.utils.interop.getOnlinePlayers
+import io.github.nickacpt.nickarcade.utils.interop.getPlayer
+import io.github.nickacpt.nickarcade.utils.interop.name
 import io.github.nickacpt.nickarcade.utils.sync
 import kotlinx.coroutines.runBlocking
-import org.bukkit.Bukkit
 import org.litote.kmongo.eq
 import org.litote.kmongo.include
 import java.util.*
@@ -25,16 +25,15 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
                 queue.remove()
 
                 //Try a name
-                var data = Bukkit.getPlayer(argument)?.getPlayerData()
+                var data = getPlayer(argument)?.getPlayerData()
                 if (data != null && data.displayOverrides.displayProfile != null) {
                     //Do not expose nicked players
                     data = null
                 }
 
-
                 //Try a UUID
                 if (data == null) {
-                    data = kotlin.runCatching { Bukkit.getPlayer(UUID.fromString(argument)) }.getOrNull()
+                    data = kotlin.runCatching { getPlayer(UUID.fromString(argument)) }.getOrNull()
                         ?.getPlayerData()
                 }
 
@@ -59,16 +58,15 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
                     return@runBlocking ArgumentParseResult.success(data)
                 }
                 return@runBlocking ArgumentParseResult.failure(
-                    PlayerArgument.PlayerParseException(
+                    Exception(
                         argument,
-                        commandContext
-                    )
+
+                        )
                 )
             }
             return@runBlocking ArgumentParseResult.failure<PlayerData>(
-                NoInputProvidedException(
-                    javaClass,
-                    commandContext
+                Exception(
+                    "Unable to find player named '$argument'"
                 )
             )
         }
@@ -82,7 +80,7 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
                     .projection(include(PlayerData::uuid, displayName))
                     .toList()
 
-            return@runBlocking (allElements.map { it.displayName } + sync { Bukkit.getOnlinePlayers() }.map { it.name }).distinct()
+            return@runBlocking (allElements.map { it.displayName } + sync { getOnlinePlayers() }.map { it.name }).distinct()
                 .toMutableList()
         }
     }

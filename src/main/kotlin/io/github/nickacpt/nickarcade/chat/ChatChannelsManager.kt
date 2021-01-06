@@ -33,7 +33,7 @@ object ChatChannelsManager {
             val smallLetter = type.name.first().toLowerCase()
             commandHelper.manager.buildAndRegister("${smallLetter}chat", aliases = arrayOf("${smallLetter}c")) {
                 argument {
-                    StringArgument.greedy("text")
+                     StringArgument.greedy("text")
                 }
                 handler {
                     command(it.sender, type.requiredRank) {

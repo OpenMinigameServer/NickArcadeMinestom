@@ -8,7 +8,7 @@ import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor.GREEN
-import org.bukkit.command.CommandSender
+import net.minestom.server.command.CommandSender
 
 object ChatCommands {
     @CommandMethod("chat <channel>")

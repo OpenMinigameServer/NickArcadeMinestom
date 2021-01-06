@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils.timers
 
-import com.github.shynixn.mccoroutine.launch
-import io.github.nickacpt.nickarcade.NickArcadePlugin
+import io.github.nickacpt.nickarcade.NickArcadeExtension
+import io.github.nickacpt.nickarcade.utils.interop.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
@@ -15,7 +15,7 @@ abstract class TimerBase constructor(private val duration: Duration, val stepTim
     private val isRunning get() = elapsedTime < duration
 
     fun start() {
-        NickArcadePlugin.instance.launch {
+        NickArcadeExtension.instance.launch {
             while (isRunning) {
                 onTick(elapsedTime, this)
                 delay(stepTime)

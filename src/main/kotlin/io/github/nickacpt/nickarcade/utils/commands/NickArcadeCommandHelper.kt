@@ -3,36 +3,28 @@ package io.github.nickacpt.nickarcade.utils.commands
 import cloud.commandframework.annotations.AnnotationParser
 import cloud.commandframework.arguments.parser.ParserParameters
 import cloud.commandframework.arguments.parser.StandardParameters
-import cloud.commandframework.bukkit.CloudBukkitCapabilities
 import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
 import cloud.commandframework.meta.SimpleCommandMeta
 import io.github.nickacpt.nickarcade.utils.permission
-import org.bukkit.command.CommandSender
-import org.bukkit.plugin.java.JavaPlugin
+import net.minestom.server.command.CommandSender
 import java.util.function.BiFunction
 
 
-class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
+class NickArcadeCommandHelper {
 
     lateinit var annotationParser: AnnotationParser<CommandSender>
     lateinit var manager: NickArcadeCommandManager<CommandSender>
 
 
-    fun init(): NickArcadeCommandHelper? {
+    fun init(): NickArcadeCommandHelper {
         val executionCoordinatorFunction =
             AsynchronousCommandExecutionCoordinator.newBuilder<CommandSender>().build()
         try {
             val commandSenderMapper: (t: CommandSender) -> CommandSender = { it }
             manager = NickArcadeCommandManager(
-                plugin,
                 executionCoordinatorFunction,
-                commandSenderMapper,
-                commandSenderMapper
+                MinestomCommandRegistrationHandler
             )
-            if (manager.queryCapability(CloudBukkitCapabilities.BRIGADIER)) {
-                manager.registerBrigadier()
-            }
-            if (manager.queryCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION)) manager.registerAsynchronousCompletions()
 
             val commandMetaFunction =
                 { p: ParserParameters ->
@@ -54,9 +46,7 @@ class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
 
             setupRequiredRankAnnotation(annotationParser)
         } catch (e: Exception) {
-            plugin.logger.severe("Failed to initialize the command manager")
-            plugin.server.pluginManager.disablePlugin(plugin)
-            return null
+            throw Exception("Failed to initialize the command manager")
         }
 
         return this
@@ -67,4 +57,5 @@ class NickArcadeCommandHelper(private val plugin: JavaPlugin) {
             return@BiFunction builder.permission(annotation.value)
         })
     }
+
 }

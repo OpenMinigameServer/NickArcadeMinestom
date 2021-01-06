@@ -2,16 +2,18 @@ package io.github.nickacpt.nickarcade.utils
 
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.scoreboard.ScoreboardDataProviderManager
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
-import org.bukkit.entity.Player
+import io.github.nickacpt.nickarcade.utils.interop.getLastColors
+import io.github.nickacpt.nickarcade.utils.interop.toNative
+import net.kyori.adventure.text.Component.text
+import net.minestom.server.MinecraftServer
+import net.minestom.server.chat.ChatColor
+import net.minestom.server.entity.Player
+
 
 object ScoreboardManager {
 
     suspend fun Player.setupOwnScoreboard() {
-        scoreboard = Bukkit.getScoreboardManager().newScoreboard
-
-        Bukkit.getOnlinePlayers().forEach {
+        MinecraftServer.getConnectionManager().onlinePlayers.forEach {
             val joinedPlayer = it
             setPlayerInfo(joinedPlayer)
         }
@@ -21,24 +23,28 @@ object ScoreboardManager {
         val data = joinedPlayer.getPlayerData()
 
         val playerName = data.displayName
-        val team = scoreboard.getTeam(playerName) ?: scoreboard.registerNewTeam(playerName)
+        val teamManager = MinecraftServer.getTeamManager()
+
+        val team = teamManager.getTeam(playerName) ?: teamManager.createTeam(playerName)
         val scoreData = ScoreboardDataProviderManager.computeData(data)
-        team.prefix = scoreData.prefix ?: ""
-        team.suffix = scoreData.suffix ?: ""
+        team.prefix = text(scoreData.prefix ?: "").toNative()
+        team.suffix = text(scoreData.suffix ?: "").toNative()
 
         //Compute team color
-        ChatColor.getByChar(ChatColor.getLastColors(team.prefix).replace("§", ""))?.let {
-            team.color = it
+        ChatColor.fromLegacyColorCodes(getLastColors(scoreData.prefix ?: "").replace("§", "").first()).let {
+            team.teamColor = it
         }
 
-        team.removeEntry(playerName)
-        team.addEntry(playerName)
+        if (team.members.contains(playerName)) {
+            team.removeMember(playerName)
+        }
+        team.addMember(playerName)
 
-        this.scoreboard = scoreboard
+        team.sendUpdatePacket()
     }
 
     fun Player.removePlayerInfo(quitPlayer: String) {
-        scoreboard.getTeam(quitPlayer)?.unregister()
+        MinecraftServer.getTeamManager().deleteTeam(quitPlayer)
     }
 
 }

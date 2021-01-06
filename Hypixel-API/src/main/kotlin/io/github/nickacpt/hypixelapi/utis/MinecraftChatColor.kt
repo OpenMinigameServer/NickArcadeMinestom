@@ -1,6 +1,6 @@
 package io.github.nickacpt.hypixelapi.utis
 
-enum class MinecraftChatColor(val chatFormat: String) {
+enum class MinecraftChatColor(val chatFormat: String, val isSpecial: Boolean = false) {
     BLACK("§0"),
     DARK_BLUE("§1"),
     DARK_GREEN("§2"),
@@ -16,5 +16,17 @@ enum class MinecraftChatColor(val chatFormat: String) {
     RED("§c"),
     LIGHT_PURPLE("§d"),
     YELLOW("§e"),
-    WHITE("§f")
+    WHITE("§f"),
+
+    OBFUSCATED("§k", true),
+    BOLD("§l", true),
+    STRIKETHROUGH("§m", true),
+    UNDERLINED("§n", true),
+    ITALIC("§o", true),
+    RESET("§r", true)
+    ;
+
+    override fun toString(): String {
+        return chatFormat
+    }
 }

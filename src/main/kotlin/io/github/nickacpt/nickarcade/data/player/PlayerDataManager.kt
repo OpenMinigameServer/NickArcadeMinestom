@@ -3,9 +3,12 @@ package io.github.nickacpt.nickarcade.data.player
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
+import io.github.nickacpt.nickarcade.utils.interop.logger
+import io.github.nickacpt.nickarcade.utils.interop.name
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.pluginInstance
-import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
+import net.minestom.server.command.CommandSender
+import net.minestom.server.entity.Player
 import org.litote.kmongo.upsert
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -29,10 +32,10 @@ object PlayerDataManager {
         val tryGetPlayerById = pluginInstance.hypixelPlayerInfoHelper.tryGetPlayerById(id)
 
         return if (tryGetPlayerById != null) {
-            pluginInstance.logger.info("Fetched Hypixel Player Data for $name [$id] successfully.")
+            logger.info("Fetched Hypixel Player Data for $name [$id] successfully.")
             tryGetPlayerById
         } else {
-            pluginInstance.logger.info("Unable to fetch Hypixel Player Data for $name [$id].")
+            logger.info("Unable to fetch Hypixel Player Data for $name [$id].")
             HypixelPlayer(
                 name.toLowerCase(),
                 name,
@@ -45,7 +48,7 @@ object PlayerDataManager {
         return if (loadedPlayerMap[uniqueId] != null) {
             loadedPlayerMap[uniqueId]!!
         } else {
-            pluginInstance.logger.info("Unable to find cached player data for $name [$uniqueId]. Fetching from MongoDb or Hypixel.")
+            logger.info("Unable to find cached player data for $name [$uniqueId]. Fetching from MongoDb or Hypixel.")
             val playerData = playerDataCollection.findOneById(uniqueId) ?: createPlayerDataFromHypixel(uniqueId, name)
             playerData.also {
                 loadedPlayerMap[uniqueId] = it
@@ -76,7 +79,7 @@ object PlayerDataManager {
         //Don't save Console Player Data
         if (it.uuid == UUID(0, 0)) return
 
-        pluginInstance.logger.info("Saving player data for ${it.displayName} [${it.uuid}]")
+        logger.info("Saving player data for ${it.displayName} [${it.uuid}]")
         playerDataCollection.updateOneById(it.uuid, it, upsert())
     }
 

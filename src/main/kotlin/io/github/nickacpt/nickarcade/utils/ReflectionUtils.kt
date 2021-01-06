@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils
 
 import cloud.commandframework.arguments.standard.EnumArgument
-import org.apache.commons.lang.reflect.FieldUtils
+import org.apache.commons.lang3.reflect.FieldUtils
 import java.util.*
 
 var <C, T : Enum<T>?>(EnumArgument.EnumParser<C, T>).allowedValues: EnumSet<T>?

@@ -8,6 +8,5 @@ data class PlayerOverrides(
     var prefixOverride: String? = null,
     var monthlyRankColorOverride: MinecraftChatColor? = null,
     var rankPlusColorOverride: MinecraftChatColor? = null,
-    var miseryMode: Boolean? = null,
     val networkLevel: Long? = null
 )

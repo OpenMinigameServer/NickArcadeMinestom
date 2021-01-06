@@ -3,33 +3,24 @@
 package io.github.nickacpt.nickarcade.utils
 
 import cloud.commandframework.Command
-import com.github.shynixn.mccoroutine.asyncDispatcher
-import com.github.shynixn.mccoroutine.launch
-import com.github.shynixn.mccoroutine.launchAsync
-import com.github.shynixn.mccoroutine.minecraftDispatcher
-import com.google.common.reflect.TypeToken
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.nickarcade.NickArcadePlugin
+import io.github.nickacpt.nickarcade.NickArcadeExtension
 import io.github.nickacpt.nickarcade.utils.debugsubjects.DebugSubjectPlayer
+import io.github.nickacpt.nickarcade.utils.interop.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toCollection
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.platform.AudienceProvider
-import net.kyori.adventure.platform.bukkit.BukkitAudiences
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
-import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
-import org.bukkit.event.Event
-import org.bukkit.event.EventException
-import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
-import java.lang.reflect.InvocationTargetException
+import net.kyori.adventure.platform.minestom.MinestomAudiences
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
+import net.minestom.server.MinecraftServer
+import net.minestom.server.command.CommandSender
+import net.minestom.server.entity.Player
+import net.minestom.server.event.CancellableEvent
+import net.minestom.server.event.Event
 
 fun command(
     sender: CommandSender,
@@ -42,54 +33,62 @@ fun command(
         val requiresPermission = requiredRank != HypixelPackageRank.NONE
         val hasPermission = !isPlayer || (sender as Player).hasPermission(rank)
         if (requiresPermission && !hasPermission) {
-            sender.sendMessage(ChatColor.RED.toString() + "You must be $rank or higher to use this command!")
+            sender.asAudience.sendMessage(text("You must be $rank or higher to use this command!", NamedTextColor.RED))
             return@runBlocking
         }
         pluginInstance.launch(block)
     }
 }
 
-val pluginInstance get() = NickArcadePlugin.instance
-val bukkitAudiences by lazy { BukkitAudiences.create(pluginInstance) }
+val pluginInstance get() = NickArcadeExtension.instance
+val minestomAudiences by lazy { MinestomAudiences.create() }
 
 val CommandSender.asAudience
     get() =
         if (this is DebugSubjectPlayer) this.target.asRedirectAudience(name) else
-            bukkitAudiences.sender(this)
+            minestomAudiences.sender(this)
 
 suspend inline fun <T> async(noinline block: suspend CoroutineScope.() -> T): T =
-    withContext(pluginInstance.asyncDispatcher, block)
+    withContext(AsyncCoroutineDispatcher, block)
 
 suspend inline fun <T> sync(noinline block: suspend CoroutineScope.() -> T): T =
-    withContext(pluginInstance.minecraftDispatcher, block)
+    withContext(MinestomCoroutineDispatcher, block)
 
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : Event> event(
-    eventPriority: EventPriority = EventPriority.NORMAL,
     ignoreCancelled: Boolean = false, forceAsync: Boolean = false,
     noinline code: suspend T.(CoroutineScope) -> Unit
 ) {
-    val type = object : TypeToken<T>() {}
-    pluginInstance.server.pluginManager.registerEvent(
-        type.rawType as Class<out Event>, object : Listener {}, eventPriority,
-        { _, event ->
-            if (!T::class.java.isInstance(event)) return@registerEvent
-            try {
-                val isAsync = forceAsync || event.isAsynchronous
-                if (isAsync) {
-                    pluginInstance.launchAsync { code(event as T, this) }
-                } else {
-                    pluginInstance.launch { code(event as T, this) }
-                }
-            } catch (var4: InvocationTargetException) {
-                throw EventException(var4.cause)
-            } catch (var5: Throwable) {
-                throw EventException(var5)
-            }
-        },
-        pluginInstance, ignoreCancelled
-    )
+    MinecraftServer.getGlobalEventHandler().addEventCallback(T::class.java) {
+        val block: suspend CoroutineScope.() -> Unit = scope@{
+            if (it is CancellableEvent && ignoreCancelled && it.isCancelled) return@scope
+            code(it, this)
+        }
+        if (forceAsync)
+            pluginInstance.async(block)
+        else
+            pluginInstance.launch(block)
+    }
+}
+
+
+@Suppress("UNCHECKED_CAST")
+inline fun <reified T : Event> cancelEvent(
+    forceAsync: Boolean = false,
+    noinline code: suspend T.(CoroutineScope) -> Unit
+) {
+    MinecraftServer.getGlobalEventHandler().addEventCallback(T::class.java) {
+        if (it is CancellableEvent) it.isCancelled = true
+
+        val block: suspend CoroutineScope.() -> Unit = scope@{
+            code(it, this)
+        }
+        if (forceAsync)
+            pluginInstance.async(block)
+        else
+            pluginInstance.launch(block)
+    }
 }
 
 
@@ -101,8 +100,10 @@ inline fun <reified T : Event> event(
  * @since 4.0.0
  */
 suspend fun AudienceProvider.filterSuspend(predicate: suspend (CommandSender) -> Boolean): Audience {
-    val list = Bukkit.getOnlinePlayers() + Bukkit.getConsoleSender()
-    return Audience.audience(list.asFlow().filter(predicate).map { it.asAudience }.toCollection(mutableListOf()))
+    val list = MinecraftServer.getConnectionManager().onlinePlayers + MinecraftServer.getCommandManager().consoleSender
+    return Audience.audience(list.asFlow().filter(predicate).map {
+        it.asAudience
+    }.toCollection(mutableListOf()))
 }
 
 fun <C> Command.Builder<C>.permission(rank: HypixelPackageRank): Command.Builder<C> {

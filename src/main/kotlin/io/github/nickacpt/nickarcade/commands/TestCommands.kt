@@ -12,27 +12,18 @@ import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.debugsubjects.DebugSubjectPlayer
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
-import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
-import net.md_5.bungee.api.ChatColor
-import org.bukkit.entity.Player
+import net.minestom.server.entity.Player
 import java.util.*
 import kotlin.random.Random
 
 object TestCommands {
 
-
-    @RequiredRank(HypixelPackageRank.ADMIN)
-    @CommandMethod("testsuspendingfunc")
-    fun testSuspendingFunc(sender: Player) = command(sender) {
-        sender.sendMessage(ChatColor.GREEN.toString() + "hey")
-        delay(5000)
-        sender.sendMessage(ChatColor.GREEN.toString() + "hey 5s later")
-    }
 
     val ranksRange = EnumSet.range(HypixelPackageRank.NORMAL, HypixelPackageRank.MVP_PLUS)
 

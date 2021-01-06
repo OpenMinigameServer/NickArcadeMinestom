@@ -1,33 +1,43 @@
 package io.github.nickacpt.nickarcade.utils.debugsubjects
 
+import com.google.gson.JsonParser
 import io.github.nickacpt.nickarcade.data.player.PlayerData
-import org.bukkit.entity.Player
-import java.util.*
+import io.github.nickacpt.nickarcade.utils.asAudience
+import net.kyori.adventure.platform.minestom.MinestomComponentSerializer
+import net.kyori.adventure.text.Component
+import net.minestom.server.chat.JsonMessage
+import net.minestom.server.entity.Player
+import net.minestom.server.network.packet.server.ServerPacket
+import net.minestom.server.network.player.PlayerConnection
+import java.net.InetSocketAddress
+import java.net.SocketAddress
 
-class DebugSubjectPlayer(val owner: Player, val target: PlayerData) : Player by owner {
-    val prefix = "[${target.actualDisplayName}] "
-
-    override fun getUniqueId(): UUID {
-        return target.uuid
+class DebugSubjectConnection : PlayerConnection() {
+    override fun sendPacket(serverPacket: ServerPacket) {
     }
 
-    override fun getName(): String {
-        return target.actualDisplayName
+    override fun getRemoteAddress(): SocketAddress {
+        return InetSocketAddress(0)
     }
 
-    override fun sendMessage(sender: UUID?, messages: Array<out String>) {
-        owner.sendMessage(sender, messages.map { prefix + it }.toTypedArray())
+    override fun disconnect() {
     }
+}
 
-    override fun sendMessage(sender: UUID?, message: String) {
-        owner.sendMessage(sender, prefix + message)
-    }
-
+class DebugSubjectPlayer(val owner: Player, val target: PlayerData) :
+    Player(target.uuid, target.actualDisplayName, DebugSubjectConnection()) {
+    private val prefix = "[${target.actualDisplayName}] "
     override fun sendMessage(message: String) {
         owner.sendMessage(prefix + message)
     }
 
-    override fun sendMessage(messages: Array<out String>) {
-        owner.sendMessage(messages.map { prefix + it }.toTypedArray())
+    override fun sendMessage(message: JsonMessage) {
+        val deserialize = MinestomComponentSerializer.get().deserialize(message)
+        owner.asAudience.sendMessage(Component.text(prefix).append(deserialize))
+    }
+
+    override fun sendJsonMessage(json: String) {
+        val deserialize = JsonMessage.RawJsonMessage(JsonParser.parseString(json).asJsonObject)
+        sendMessage(deserialize)
     }
 }

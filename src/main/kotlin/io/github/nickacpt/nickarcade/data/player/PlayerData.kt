@@ -14,15 +14,14 @@ import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.party.model.Party
-import io.github.nickacpt.nickarcade.utils.bukkitAudiences
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
+import io.github.nickacpt.nickarcade.utils.minestomAudiences
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.event.HoverEventSource
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.Bukkit
-import org.bukkit.entity.Player
-import org.bukkit.permissions.PermissionAttachment
+import net.minestom.server.MinecraftServer
+import net.minestom.server.entity.Player
 import java.util.*
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator::class, property = "_id")
@@ -34,7 +33,7 @@ class PlayerData(
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
     val displayOverrides: DisplayOverrides = DisplayOverrides(),
-    @JsonIgnore var permission: PermissionAttachment? = null,
+//    @JsonIgnore var permission: Permission? = null,
     @JsonIgnore var currentParty: Party? = null
 ) {
     init {
@@ -54,7 +53,7 @@ class PlayerData(
                 0,
                 0
             )
-        ) bukkitAudiences.console() else bukkitAudiences.player(uuid)
+        ) minestomAudiences.console() else minestomAudiences.player(uuid)
 
     @JsonIgnore
     fun asRedirectAudience(name: String): Audience {
@@ -63,7 +62,8 @@ class PlayerData(
 
     @get:JsonIgnore
     val player: Player?
-        get() = forwardTarget?.player ?: Bukkit.getPlayer(uuid) ?: ImpersonationManager.getImpersonatorPlayer(uuid)
+        get() = forwardTarget?.player ?: MinecraftServer.getConnectionManager().getPlayer(uuid)
+        ?: ImpersonationManager.getImpersonatorPlayer(uuid)
 
     @get:JsonIgnore
     val isOnline: Boolean

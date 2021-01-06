@@ -11,7 +11,7 @@ import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.entity.Player
+import net.minestom.server.entity.Player
 
 object PartyCommands {
 

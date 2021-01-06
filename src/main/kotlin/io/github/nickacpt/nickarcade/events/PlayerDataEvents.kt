@@ -1,8 +1,7 @@
 package io.github.nickacpt.nickarcade.events
 
-import com.destroystokyo.paper.profile.PlayerProfile
-import com.destroystokyo.paper.profile.ProfileProperty
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
+import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor.*
 import io.github.nickacpt.hypixelapi.utis.profile.Profile
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.player.PlayerData
@@ -10,18 +9,18 @@ import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.party.model.PartyHelper
+import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.removePlayerInfo
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setPlayerInfo
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setupOwnScoreboard
-import io.github.nickacpt.nickarcade.utils.actualPlayerProfile
-import io.github.nickacpt.nickarcade.utils.bukkitAudiences
-import io.github.nickacpt.nickarcade.utils.event
-import io.github.nickacpt.nickarcade.utils.pluginInstance
+import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
+import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
 import net.kyori.adventure.text.Component
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
-import org.bukkit.entity.Player
+import net.minestom.server.MinecraftServer
+import net.minestom.server.entity.Player
+import net.minestom.server.permission.Permission
 
 fun registerPlayerDataEvents() {
 
@@ -41,7 +40,7 @@ fun registerPlayerDataEvents() {
 
         player.actualPlayerProfile = ProfileApi.getProfileService().findById(player.uniqueId)?.toPlayerProfile()
 
-        Bukkit.getOnlinePlayers().forEach {
+        MinecraftServer.getConnectionManager().onlinePlayers.forEach {
             it.removePlayerInfo(data.displayName)
         }
     }
@@ -59,8 +58,8 @@ fun registerPlayerDataEvents() {
     }
 }
 
-private fun Profile.toPlayerProfile(): PlayerProfile {
-    return Bukkit.createProfile(uuid, name).also { bukkitProfile ->
+fun Profile.toPlayerProfile(): PlayerProfile {
+    return PlayerProfile(uuid, name).also { bukkitProfile ->
         val raw = this.textures?.raw
         if (raw != null) {
             bukkitProfile.properties.add(ProfileProperty("textures", raw.value, raw.signature))
@@ -70,26 +69,23 @@ private fun Profile.toPlayerProfile(): PlayerProfile {
 }
 
 fun setupPermissions(player: PlayerData, bukkitPlayer: Player) {
-    player.permission?.let { bukkitPlayer.removeAttachment(it) }
-    val permissionAttachment = bukkitPlayer.addAttachment(pluginInstance)
-    player.permission = permissionAttachment.apply {
-        HypixelPackageRank.values().forEach {
-            if (player.hasAtLeastRank(it)) {
-                this.setPermission(it.name.toLowerCase(), true)
-            }
+    val minestomPlayer = player.player ?: return
+    HypixelPackageRank.values().forEach {
+        if (player.hasAtLeastRank(it)) {
+            minestomPlayer.addPermission(Permission(it.name.toLowerCase()))
         }
     }
 }
 
 private fun PlayerDataReloadEvent.showLobbyMessage() {
-    val superStarColors = listOf(ChatColor.AQUA, ChatColor.RED, ChatColor.GREEN)
+    val superStarColors = listOf(BLUE, RED, GREEN)
     val joinPrefix =
         if (player.hasAtLeastDisplayRank(HypixelPackageRank.SUPERSTAR)) " ${superStarColors.joinToString("") { "$it>" }} " else ""
     val joinSuffix = if (player.hasAtLeastDisplayRank(HypixelPackageRank.SUPERSTAR)) " ${
         superStarColors.reversed().joinToString("") { "$it<" }
     } " else ""
     if (player.hasAtLeastDisplayRank(HypixelPackageRank.MVP_PLUS)) {
-        bukkitAudiences.all().sendMessage(
+        minestomAudiences.all().sendMessage(
             Component.text("$joinPrefix${player.getChatName()}§6 joined the lobby!$joinSuffix")
                 .hoverEvent(player.computeHoverEventComponent())
         )
@@ -97,7 +93,7 @@ private fun PlayerDataReloadEvent.showLobbyMessage() {
 }
 
 private suspend fun updateNewPlayerTeamForOnlinePlayers(joinedPlayer: Player) {
-    Bukkit.getOnlinePlayers().forEach {
+    MinecraftServer.getConnectionManager().onlinePlayers.forEach {
         it.setPlayerInfo(joinedPlayer)
     }
 }

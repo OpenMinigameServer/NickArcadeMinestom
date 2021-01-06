@@ -2,7 +2,7 @@ package io.github.nickacpt.nickarcade.utils.profiles
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.nickacpt.hypixelapi.utis.HypixelApi
-import io.github.nickacpt.nickarcade.utils.pluginInstance
+import io.github.nickacpt.nickarcade.utils.interop.logger
 import java.io.File
 
 object ProfilesManager {
@@ -24,7 +24,7 @@ object ProfilesManager {
             }
         }
         if (result.isFailure) {
-            pluginInstance.logger.warning("Unable to load dumped profiles from ${file.name}: ${result.exceptionOrNull()}")
+            logger.warn("Unable to load dumped profiles from ${file.name}: ${result.exceptionOrNull()}")
         }
     }
 

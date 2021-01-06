@@ -1,32 +1,27 @@
 package io.github.nickacpt.nickarcade.utils.commands
 
+import cloud.commandframework.CommandManager
 import cloud.commandframework.CommandTree
 import cloud.commandframework.arguments.parser.ArgumentParseResult
 import cloud.commandframework.arguments.parser.ArgumentParser
 import cloud.commandframework.context.CommandContext
 import cloud.commandframework.execution.CommandExecutionCoordinator
-import cloud.commandframework.paper.PaperCommandManager
+import cloud.commandframework.internal.CommandRegistrationHandler
+import cloud.commandframework.meta.CommandMeta
+import cloud.commandframework.meta.SimpleCommandMeta
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.utils.commands.parsers.PlayerDataParser
 import io.leangen.geantyref.TypeToken
 import kotlinx.coroutines.runBlocking
-import org.bukkit.command.CommandSender
-import org.bukkit.plugin.Plugin
+import net.minestom.server.command.CommandSender
 import org.checkerframework.checker.nullness.qual.NonNull
 import java.util.*
 import java.util.function.Function
 
-class NickArcadeCommandManager<C>(
-    owningPlugin: @NonNull Plugin,
-    commandExecutionCoordinator: @NonNull Function<CommandTree<C>, CommandExecutionCoordinator<C>>,
-    commandSenderMapper: @NonNull Function<CommandSender, C>,
-    backwardsCommandSenderMapper: @NonNull Function<C, CommandSender>
-) : PaperCommandManager<C>(
-    owningPlugin,
-    commandExecutionCoordinator,
-    commandSenderMapper,
-    backwardsCommandSenderMapper
-) {
+class NickArcadeCommandManager<C : CommandSender>(
+    commandExecutionCoordinator: @NonNull Function<@NonNull CommandTree<C>, @NonNull CommandExecutionCoordinator<C>>,
+    commandRegistrationHandler: @NonNull CommandRegistrationHandler
+) : CommandManager<C>(commandExecutionCoordinator, commandRegistrationHandler) {
     init {
         registerPlayerDataParser()
     }
@@ -68,6 +63,15 @@ class NickArcadeCommandManager<C>(
 
     private fun registerPlayerDataParser() {
         parserRegistry.registerParserSupplier(TypeToken.get(PlayerData::class.java)) { PlayerDataParser() }
+    }
+
+    override fun hasPermission(sender: C, permission: String): Boolean {
+        if (sender.isConsole) return true
+        return sender.hasPermission(permission)
+    }
+
+    override fun createDefaultCommandMeta(): CommandMeta {
+        return SimpleCommandMeta.simple().build()
     }
 
 }

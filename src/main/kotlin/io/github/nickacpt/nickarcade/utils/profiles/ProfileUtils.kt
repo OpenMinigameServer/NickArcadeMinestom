@@ -6,7 +6,9 @@ import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.actualPlayerProfile
-import org.bukkit.entity.Player
+import io.github.nickacpt.nickarcade.utils.interop.callEvent
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
+import net.minestom.server.entity.Player
 
 
 suspend fun Player.getDisplayProfile(): DumpedProfile? {
@@ -28,7 +30,7 @@ suspend inline fun reloadProfile(
 suspend fun Player.setDisplayProfile(profile: DumpedProfile?, reloadProfile: Boolean = false) {
     reloadProfile(getPlayerData(), reloadProfile) {
         actualPlayerProfile = profile?.asPlayerProfile(uniqueId)
-        setPlayerListName(null)
+        setDisplayName(null)
         displayOverrides.displayProfile = profile
     }
 }

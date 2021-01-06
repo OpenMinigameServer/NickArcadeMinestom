@@ -6,7 +6,7 @@ import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor.*
-import org.bukkit.command.CommandSender
+import net.minestom.server.command.CommandSender
 
 object MiscCommands {
     @CommandMethod("emotes")
