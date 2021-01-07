@@ -5,10 +5,8 @@ import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor.*
 import io.github.nickacpt.hypixelapi.utis.profile.Profile
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.player.PlayerData
-import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
-import io.github.nickacpt.nickarcade.party.model.PartyHelper
 import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.removePlayerInfo
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setPlayerInfo
@@ -24,16 +22,6 @@ import net.minestom.server.permission.Permission
 
 fun registerPlayerDataEvents() {
 
-    event<PlayerDataJoinEvent> {
-        val data = player
-
-        //Restore current party
-        data.currentParty = PartyHelper.getCachedParty(player.uuid)
-
-        //Also restore player instance because PlayerData is a difference object now
-        data.currentParty?.restorePlayer(data)
-    }
-
     event<PlayerDataLeaveEvent> {
         val data = player
         val player = data.player ?: return@event
@@ -47,12 +35,12 @@ fun registerPlayerDataEvents() {
 
     event<PlayerDataReloadEvent> {
 
-        val bukkitPlayer = player.player ?: return@event
-        bukkitPlayer.setDisplayProfile(player.displayOverrides.displayProfile)
-        setupPermissions(player, bukkitPlayer)
-        bukkitPlayer.setupOwnScoreboard()
+        val minestomPlayer = player.player ?: return@event
+        minestomPlayer.setDisplayProfile(player.displayOverrides.displayProfile)
+        setupPermissions(player, minestomPlayer)
+        minestomPlayer.setupOwnScoreboard()
 
-        updateNewPlayerTeamForOnlinePlayers(bukkitPlayer)
+        updateNewPlayerTeamForOnlinePlayers(minestomPlayer)
 
         showLobbyMessage()
     }
@@ -68,8 +56,7 @@ fun Profile.toPlayerProfile(): PlayerProfile {
     }
 }
 
-fun setupPermissions(player: PlayerData, bukkitPlayer: Player) {
-    val minestomPlayer = player.player ?: return
+fun setupPermissions(player: PlayerData, minestomPlayer: Player) {
     HypixelPackageRank.values().forEach {
         if (player.hasAtLeastRank(it)) {
             minestomPlayer.addPermission(Permission(it.name.toLowerCase()))

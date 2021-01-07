@@ -10,10 +10,11 @@ import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
 import io.github.nickacpt.nickarcade.events.registerJoinEvents
 import io.github.nickacpt.nickarcade.events.registerLeaveEvents
 import io.github.nickacpt.nickarcade.events.registerPlayerDataEvents
+import io.github.nickacpt.nickarcade.events.registerPlayerEvents
+import io.github.nickacpt.nickarcade.schematics.manager.SchematicManager
+import io.github.nickacpt.nickarcade.schematics.manager.SchematicName
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
-import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
-import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import net.minestom.server.MinecraftServer
 import net.minestom.server.extensions.Extension
@@ -41,29 +42,22 @@ class NickArcadeExtension : Extension() {
     lateinit var service: HypixelService
     lateinit var hypixelPlayerInfoHelper: HypixelPlayerInfoHelper
 
-    public fun walterProfile(id: UUID, name: String): PlayerProfile {
-        return PlayerProfile(id, name).apply {
-            properties.add(
-                ProfileProperty(
-                    "textures",
-                    "ewogICJ0aW1lc3RhbXAiIDogMTU5NjY1MzIyMTE5MiwKICAicHJvZmlsZUlkIiA6ICI0MjZhMDcyMTU0MjA0OTI1YTBjZTBhZTJkYzI2N2NlYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJ3bHRlciIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9hOGMwZmMyN2FjMjE4NWI2NTIwMDdhNjlhZjkyMDBjNDgyYzQ2NDM1NWZlMTkwZTU2NjJhNWU2ODQxMThiNjQxIgogICAgfQogIH0KfQ==",
-                    "tUMqCZNARmvO0r2kjpC6Udknv55op5XLiDfKEJ4dLa5P7g16utxSs7dUvcVkYxvlwO1JA9OmFqOhtV9M2nMA1YK65aiADYQfp0DW7t+lV27jy2AwwXR/IVP5+xpjfG4tCCe+hTiSRkVRzmQLEK90Wh99EW1UmHgXSq7fJSacyvVi9K1ycQFtR1Z3D+PnqJmlypEjnzs5rcX+oUF9W7QS/PJWWm/AEUqtMLZ88fwi9Jfku/RHnK+KaQsPFHI7D8NcEB1jzh0fn4EVsLB+UEOuNmhusyQcPRPSN6n9tG2d7GsdzOKq+9Mj61/blm/KEHzUfVQ3Rr+jyZPXS3+5wwnbgZPRVW8pO2e/k8tVbFt4mLyNacM5gBOONbol6x/39/X7VL6A/TrzDzWcN1RhT0fCWiRjrqqUH98u+aJbHuhJQRe8qz4cPGIa/Gx1bSOWz6aUuBj66u7EAcx0h5qluMTJ5w16woWaR4omIa4lCA5DSV4X116fCzAwCg2vzMAWxQoWag2Mg3nqLcmrhKJaObEtTLwArLERhZm48qx9oTj9ENd3WyXqJmQM2WTw/6uezv90vGIqux4Z9VaHS97GQLUEjwFGQkKXOPxa74Mc5GvUm6zua7KQQkH7+WZ9pfIhlhWbJZHNBr9TB/utfWpz15ZP2Q++gQg3eYyVZ8H2t5Ab1EA="
-                )
-            )
-        }
-    }
-
     override fun initialize() {
         instance = this
         commandManager = NickArcadeCommandHelper().init()
 
-
         initMainConfig()
-        initHypixelServices() ?: disablePlugin("Unable to initialize Hypixel services")
+        initHypixelServices() ?: run {
+            throw Exception("Unable to initialize plugin! Reason: Unable to initialize Hypixel services")
+        }
+
+        SchematicManager.hasSchematicByName(SchematicName.LOBBY).takeIf { it }
+            ?: throw Exception("Unable to find lobby schematic.")
 
         commandManager.registerCommands()
 
         registerJoinEvents()
+        registerPlayerEvents()
         registerPlayerDataEvents()
         registerLeaveEvents()
 
@@ -76,10 +70,6 @@ class NickArcadeExtension : Extension() {
         val directory = File(dataFolder, "profiles").also { it.mkdirs() }
         ProfilesManager.loadProfiles(directory)
         logger.info("Loaded ${ProfilesManager.profiles.count()} profiles from dump!")
-    }
-
-    private fun disablePlugin(reason: String): Nothing {
-        throw Exception("Unable to initialize plugin! Reason: $reason")
     }
 
     private fun initHypixelServices(): Unit? {

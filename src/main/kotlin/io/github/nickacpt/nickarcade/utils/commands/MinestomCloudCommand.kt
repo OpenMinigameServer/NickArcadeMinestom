@@ -84,7 +84,7 @@ class MinestomCloudCommand<C : CommandSender>(
                         ArgumentStringArray(arg.name)
                     }
                     else -> {
-                        ArgumentDynamicWord(arg.name, SuggestionType.ASK_SERVER).setDefaultValue(arg.defaultValue)
+                        ArgumentDynamicWord(arg.name, SuggestionType.ASK_SERVER)
                     }
                 }
             }

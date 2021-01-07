@@ -2,7 +2,7 @@ package io.github.nickacpt.hypixelapi.models
 
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 
-enum class HypixelPackageRank(val prefix: String, val chatMessagePrefix: String = "§r") {
+enum class HypixelPackageRank(private val prefix: String, private val chatMessagePrefix: String = "§r") {
     NONE("§7", "§7"),
     NORMAL(NONE),
     VIP("§a[VIP] "),

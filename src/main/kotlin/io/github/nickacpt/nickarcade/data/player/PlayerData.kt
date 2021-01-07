@@ -14,8 +14,10 @@ import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.party.model.Party
+import io.github.nickacpt.nickarcade.party.model.PartyManager
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
 import io.github.nickacpt.nickarcade.utils.minestomAudiences
+import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.event.HoverEventSource
@@ -33,12 +35,22 @@ class PlayerData(
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
     val displayOverrides: DisplayOverrides = DisplayOverrides(),
-//    @JsonIgnore var permission: Permission? = null,
-    @JsonIgnore var currentParty: Party? = null
+//    @JsonIgnore var permission: Permission? = null
 ) {
     init {
         if (rawHypixelData != null) {
             hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
+        }
+    }
+
+    @JsonIgnore
+    fun getCurrentParty(showPrompt: Boolean = false): Party? {
+        return PartyManager.getParty(this).also {
+            if (it == null && showPrompt) {
+                audience.sendMessage(separator {
+                    append(text("You are not currently in a party.", NamedTextColor.RED))
+                })
+            }
         }
     }
 
@@ -144,10 +156,10 @@ class PlayerData(
 
     @JsonIgnore
     fun getOrCreateParty(): Party {
-        if (currentParty == null) {
-            return Party(this).also { currentParty = it }
+        if (getCurrentParty() == null) {
+            return PartyManager.createParty(this)
         }
-        return currentParty as Party
+        return getCurrentParty() as Party
     }
 
     override fun equals(other: Any?): Boolean {

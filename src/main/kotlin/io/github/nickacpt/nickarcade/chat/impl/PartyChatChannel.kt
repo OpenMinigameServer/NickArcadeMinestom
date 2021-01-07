@@ -10,7 +10,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 
 object PartyChatChannel : AbstractChatChannel(ChatChannelType.PARTY) {
     override suspend fun checkSender(sender: PlayerData, origin: ChatMessageOrigin): Boolean {
-        if (sender.currentParty == null) {
+        if (sender.getCurrentParty() == null) {
             if (origin == ChatMessageOrigin.CHAT && sender.currentChannel == ChatChannelType.PARTY) {
                 sender.currentChannel = ChatChannelType.ALL
                 sender.audience.sendMessage(separator {
@@ -24,6 +24,6 @@ object PartyChatChannel : AbstractChatChannel(ChatChannelType.PARTY) {
     }
 
     override suspend fun getRecipients(sender: PlayerData, message: String): Audience {
-        return sender.currentParty?.audience ?: Audience.empty()
+        return sender.getCurrentParty()?.audience ?: Audience.empty()
     }
 }

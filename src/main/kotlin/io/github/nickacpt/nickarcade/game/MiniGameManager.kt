@@ -1,4 +1,4 @@
-package io.github.nickacpt.nickarcade.minigames
+package io.github.nickacpt.nickarcade.game
 
 object MiniGameManager {
 

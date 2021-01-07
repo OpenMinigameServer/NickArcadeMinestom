@@ -74,7 +74,7 @@ object PartyCommands {
     @CommandMethod("party|p accept <target>")
     fun acceptParty(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
         val sender = senderPlayer.getPlayerData()
-        val party = target.currentParty
+        val party = target.getCurrentParty()
 
         if (party == null || !party.hasPendingInvite(sender)) {
             sender.audience.sendMessage(separator {
@@ -94,7 +94,7 @@ object PartyCommands {
     @CommandMethod("party|p list")
     fun listParty(senderPlayer: Player) = command(senderPlayer) {
         val sender = senderPlayer.getPlayerData()
-        val party = sender.getCurrentParty() ?: return@command
+        val party = sender.getCurrentParty(true) ?: return@command
 
         sender.audience.sendMessage(party.listMessage)
     }
@@ -115,7 +115,7 @@ object PartyCommands {
     }
 
     private fun PlayerData.getCurrentParty(): Party? {
-        val party = currentParty
+        val party = getCurrentParty()
         if (party == null) {
             audience.sendMessage(separator {
                 append(text("You are not in a party right now.", NamedTextColor.RED))

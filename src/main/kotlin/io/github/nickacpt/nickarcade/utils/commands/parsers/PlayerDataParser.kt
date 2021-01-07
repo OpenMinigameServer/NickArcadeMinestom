@@ -80,7 +80,9 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
                     .projection(include(PlayerData::uuid, displayName))
                     .toList()
 
-            return@runBlocking (allElements.map { it.displayName } + sync { getOnlinePlayers() }.map { it.name }).distinct()
+            return@runBlocking (allElements.map {
+                it.displayName
+            } + sync { getOnlinePlayers() }.map { it.name }).distinct()
                 .toMutableList()
         }
     }

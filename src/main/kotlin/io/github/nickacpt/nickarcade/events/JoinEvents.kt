@@ -23,7 +23,7 @@ import net.minestom.server.event.player.*
 import java.util.*
 
 fun registerJoinEvents() {
-    MinecraftServer.getConnectionManager().setUuidProvider { playerConnection, username ->
+    MinecraftServer.getConnectionManager().setUuidProvider { _, username ->
         return@setUuidProvider runBlocking {
             runCatching { ProfileApi.getProfileByName(username)?.uniqueId }.getOrNull() ?: UUID.randomUUID()
         }
@@ -39,7 +39,7 @@ fun registerJoinEvents() {
 //        }
         player.skin = profile.toPlayerProfile().toSkin()
     }
-    blockInvalidNames()
+    registerPreLoginEvent()
 
     event<PlayerLoginEvent> {
         sendPlayerDataActionBar()
@@ -56,7 +56,7 @@ fun registerJoinEvents() {
 
     cancelEvent<PlayerChatEvent>
     {
-        player.skin = pluginInstance.walterProfile(player.uniqueId, player.name).toSkin()
+//        player.skin = pluginInstance.walterProfile(player.uniqueId, player.name).toSkin()
         val playerData = this.player.getPlayerData()
         val channel = ChatChannelsManager.getChannelByType(playerData.currentChannel)
         channel.sendMessageInternal(playerData, this.message, ChatMessageOrigin.CHAT)
@@ -64,7 +64,7 @@ fun registerJoinEvents() {
 }
 
 
-private fun blockInvalidNames() {
+private fun registerPreLoginEvent() {
     val validPattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
     event<AsyncPlayerPreLoginEvent> {
         val isValidName = validPattern.matchEntire(this.username) != null

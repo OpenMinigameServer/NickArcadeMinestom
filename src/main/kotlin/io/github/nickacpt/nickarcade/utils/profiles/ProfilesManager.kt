@@ -6,6 +6,8 @@ import io.github.nickacpt.nickarcade.utils.interop.logger
 import java.io.File
 
 object ProfilesManager {
+    private val ignoredProfiles = listOf("NickAc", "FuzzyTurtle87", "Bwar_", "BasicBwar", "not_irrelevant")
+
     private val mapper = HypixelApi.objectMapper
 
     fun loadProfiles(directory: File) {
@@ -20,7 +22,7 @@ object ProfilesManager {
             mapper.readValue<List<DumpedProfile>>(file).also { dumpList ->
                 if (dumpList.any { it.name.contains('!') }) throw Exception("SkyBlock dump should not be included!")
                 // Skip self-dumper when loading the profiles
-                profiles.addAll(dumpList.filterNot { it.name == "NickAc" && !it.tabShownName.contains("[NPC]") })
+                profiles.addAll(dumpList.filterNot { ignoredProfiles.contains(it.name) || !it.tabShownName.contains("[NPC]") })
             }
         }
         if (result.isFailure) {
