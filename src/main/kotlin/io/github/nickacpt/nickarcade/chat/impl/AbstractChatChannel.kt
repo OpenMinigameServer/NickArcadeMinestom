@@ -29,7 +29,11 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         message: ComponentLike
     ): ComponentLike {
         val chatColor =
-            if (sender.hasAtLeastRank(HypixelPackageRank.VIP)) NamedTextColor.WHITE else NamedTextColor.GRAY
+            if (sender.hasAtLeastRank(
+                    HypixelPackageRank.VIP,
+                    showActualValues
+                )
+            ) NamedTextColor.WHITE else NamedTextColor.GRAY
 
         return text {
             if (type.prefix != null)

@@ -23,8 +23,7 @@ data class Party(
     val members: MutableList<PlayerData> = mutableListOf(),
     val pendingInvites: MutableList<PlayerData> = mutableListOf()
 ) {
-    init {
-    }
+    private val membersCount = members.count { it != leader }
 
     fun hasPendingInvite(player: PlayerData): Boolean {
         return pendingInvites.contains(player)
@@ -98,12 +97,31 @@ data class Party(
         })
     }
 
-    fun addMember(member: PlayerData) {
+    fun addMember(member: PlayerData, broadcast: Boolean = false) {
         PartyManager.addMember(this, member)
+
+        if (broadcast) {
+            audience.sendMessage(separator {
+                append(text(member.getChatName(true)))
+                append(text(" joined the party.", NamedTextColor.YELLOW))
+            })
+        }
     }
 
-    fun removeMember(member: PlayerData) {
+    fun removeMember(member: PlayerData, broadcast: Boolean = false, isKick: Boolean = false) {
         PartyManager.removeMember(this, member)
+
+        if (broadcast) {
+            audience.sendMessage(separator {
+                append(text(member.getChatName(true)))
+                if (isKick) {
+                    append(text(" has been kicked from the party.", NamedTextColor.YELLOW))
+                } else {
+                    append(text(" left the party.", NamedTextColor.YELLOW))
+                }
+            })
+        }
+
     }
 
     private fun TextComponent.Builder.appendPlayerData(it: PlayerData) {
@@ -128,6 +146,10 @@ data class Party(
         }
     }
 
+    fun isLeader(sender: PlayerData): Boolean {
+        return leader == sender
+    }
+
     val listMessage: Component
         get() {
             return separator {
@@ -135,14 +157,16 @@ data class Party(
                 append(newline())
                 append(text("Party Leader: ", NamedTextColor.YELLOW))
                 appendPlayerData(leader); append(newline())
-                append(text("Party Members: ", NamedTextColor.YELLOW));
-                members.forEach {
-                    appendPlayerData(it)
+                if (membersCount > 0) {
+                    append(text("Party Members: ", NamedTextColor.YELLOW));
+                    members.forEach {
+                        appendPlayerData(it)
+                    }
                 }
             }
         }
-    val totalMemberCount: Int
-        get() = members.size + 1
+    private val totalMemberCount: Int
+        get() = members.size
 
     val id: UUID = UUID.randomUUID()
     var settings: PartySettings = PartySettings(this)

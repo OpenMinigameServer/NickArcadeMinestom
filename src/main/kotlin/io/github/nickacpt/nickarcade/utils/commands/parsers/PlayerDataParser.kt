@@ -10,7 +10,6 @@ import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.div
 import io.github.nickacpt.nickarcade.utils.interop.getOnlinePlayers
 import io.github.nickacpt.nickarcade.utils.interop.getPlayer
-import io.github.nickacpt.nickarcade.utils.interop.name
 import io.github.nickacpt.nickarcade.utils.sync
 import kotlinx.coroutines.runBlocking
 import org.litote.kmongo.eq
@@ -82,7 +81,7 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
 
             return@runBlocking (allElements.map {
                 it.displayName
-            } + sync { getOnlinePlayers() }.map { it.name }).distinct()
+            } + sync { getOnlinePlayers().map { it.getPlayerData() } }.map { it.actualDisplayName }).distinct()
                 .toMutableList()
         }
     }

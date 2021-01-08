@@ -22,7 +22,7 @@ object ProfilesManager {
             mapper.readValue<List<DumpedProfile>>(file).also { dumpList ->
                 if (dumpList.any { it.name.contains('!') }) throw Exception("SkyBlock dump should not be included!")
                 // Skip self-dumper when loading the profiles
-                profiles.addAll(dumpList.filterNot { ignoredProfiles.contains(it.name) || !it.tabShownName.contains("[NPC]") })
+                profiles.addAll(dumpList.filter { !ignoredProfiles.contains(it.name) && !it.tabShownName.contains("[NPC]") })
             }
         }
         if (result.isFailure) {

@@ -5,7 +5,6 @@ import cloud.commandframework.annotations.CommandMethod
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
-import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.separator
@@ -43,6 +42,16 @@ object PartyCommands {
             return@command
         }
         party.invitePlayer(sender, target)
+    }
+
+    @CommandMethod("party|p leave")
+    fun partyLeavePlayer(
+        senderPlayer: Player
+    ) = command(senderPlayer) {
+        val sender = senderPlayer.getPlayerData()
+        val party = sender.getCurrentParty(true) ?: return@command
+
+        party.removeMember(sender, true)
     }
 
     @CommandMethod("party|p disband")
@@ -84,11 +93,22 @@ object PartyCommands {
         }
 
         party.pendingInvites.remove(sender)
-        party.addMember(sender)
-        party.audience.sendMessage(separator {
-            append(text(sender.getChatName(true)))
-            append(text(" joined the party.", NamedTextColor.YELLOW))
-        })
+        party.addMember(sender, true)
+    }
+
+    @CommandMethod("party|p kick <target>")
+    fun kickParty(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
+        val sender = senderPlayer.getPlayerData()
+        val party = sender.getCurrentParty(true) ?: return@command
+        if (!party.isLeader(sender)) {
+            sender.audience.sendMessage(separator {
+                append(text("You are not the party leader.", NamedTextColor.RED))
+            })
+            return@command
+        }
+
+        party.removeMember(target, true)
+
     }
 
     @CommandMethod("party|p list")
@@ -113,17 +133,4 @@ object PartyCommands {
 
         sender.audience.sendMessage(party.listMessage)
     }
-
-    private fun PlayerData.getCurrentParty(): Party? {
-        val party = getCurrentParty()
-        if (party == null) {
-            audience.sendMessage(separator {
-                append(text("You are not in a party right now.", NamedTextColor.RED))
-            })
-            return null
-        }
-        return party
-    }
-
-
 }

@@ -131,11 +131,11 @@ class PlayerData(
         false -> "$effectivePrefix$displayName"
     }
 
-    fun hasAtLeastRank(rank: HypixelPackageRank, actualData: Boolean): Boolean {
+    fun hasAtLeastRank(rank: HypixelPackageRank, actualData: Boolean = false): Boolean {
         return actualData && hasAtLeastRank(rank) || hasAtLeastDisplayRank(rank)
     }
 
-    fun hasAtLeastRank(rank: HypixelPackageRank): Boolean {
+    private fun hasAtLeastRank(rank: HypixelPackageRank): Boolean {
         return effectiveRank.ordinal >= rank.ordinal
     }
 

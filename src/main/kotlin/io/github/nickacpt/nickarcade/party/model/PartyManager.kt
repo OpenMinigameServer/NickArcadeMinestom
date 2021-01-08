@@ -9,6 +9,7 @@ object PartyManager {
     fun createParty(leader: PlayerData): Party {
         val party = Party(leader)
         playerParty[leader.uuid] = party
+        addMember(party, leader)
         return party
     }
 
