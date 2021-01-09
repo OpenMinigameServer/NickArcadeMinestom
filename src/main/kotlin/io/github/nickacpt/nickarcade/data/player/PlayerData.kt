@@ -16,6 +16,7 @@ import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.party.model.PartyManager
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
+import io.github.nickacpt.nickarcade.utils.interop.getLastColors
 import io.github.nickacpt.nickarcade.utils.minestomAudiences
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.audience.Audience
@@ -126,9 +127,19 @@ class PlayerData(
         get() = effectivePlayerOverrides().networkLevel ?: hypixelData?.networkLevel ?: 1
 
     @JsonIgnore
-    fun getChatName(actualData: Boolean = false) = when (actualData) {
-        true -> "${computeEffectivePrefix(true)}$actualDisplayName"
-        false -> "$effectivePrefix$displayName"
+    fun getChatName(actualData: Boolean = false, colourPrefixOnly: Boolean = false): String {
+        var name = displayName
+        var prefix = effectivePrefix
+        if (actualData) {
+            name = actualDisplayName
+            prefix = computeEffectivePrefix(true) ?: effectivePrefix
+        }
+
+        if (colourPrefixOnly) {
+            prefix = getLastColors(prefix)
+        }
+
+        return "$prefix$name"
     }
 
     fun hasAtLeastRank(rank: HypixelPackageRank, actualData: Boolean = false): Boolean {

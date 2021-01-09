@@ -7,10 +7,8 @@ import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.commands.*
 import io.github.nickacpt.nickarcade.data.MongoDbConnectionHelper
 import io.github.nickacpt.nickarcade.data.config.MainConfigurationFile
-import io.github.nickacpt.nickarcade.events.registerJoinEvents
-import io.github.nickacpt.nickarcade.events.registerLeaveEvents
-import io.github.nickacpt.nickarcade.events.registerPlayerDataEvents
-import io.github.nickacpt.nickarcade.events.registerPlayerEvents
+import io.github.nickacpt.nickarcade.display.DisplayPacketHandler.registerDisplayPacketHandler
+import io.github.nickacpt.nickarcade.events.*
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicManager
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicName
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
@@ -45,6 +43,7 @@ class NickArcadeExtension : Extension() {
     override fun initialize() {
         instance = this
         commandManager = NickArcadeCommandHelper().init()
+        registerDisplayPacketHandler()
 
         initMainConfig()
         initHypixelServices() ?: run {
@@ -60,6 +59,7 @@ class NickArcadeExtension : Extension() {
         registerPlayerEvents()
         registerPlayerDataEvents()
         registerLeaveEvents()
+        registerGameEvents()
 
         loadProfilesManager()
 

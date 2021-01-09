@@ -14,7 +14,7 @@ object StaffChatChannel : AbstractChatChannel(ChatChannelType.STAFF) {
 
     override suspend fun getRecipients(sender: PlayerData, message: String): Audience {
         return minestomAudiences.filterSuspend {
-            it.getPlayerData().hasAtLeastRank(HypixelPackageRank.HELPER)
+            it.getPlayerData().hasAtLeastRank(HypixelPackageRank.HELPER, true)
         }
     }
 }

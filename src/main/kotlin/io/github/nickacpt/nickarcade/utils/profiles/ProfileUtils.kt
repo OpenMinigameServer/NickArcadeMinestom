@@ -2,9 +2,9 @@ package io.github.nickacpt.nickarcade.utils.profiles
 
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
-import io.github.nickacpt.nickarcade.events.impl.PlayerDataJoinEvent
-import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
-import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
+import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataJoinEvent
+import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
+import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.actualPlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.callEvent
 import net.minestom.server.entity.Player

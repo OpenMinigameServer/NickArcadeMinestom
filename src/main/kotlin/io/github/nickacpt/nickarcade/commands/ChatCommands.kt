@@ -12,10 +12,11 @@ import net.minestom.server.command.CommandSender
 
 object ChatCommands {
     @CommandMethod("chat <channel>")
-    fun channelSwitchCommand(sender: CommandSender, @Argument("channel") channel: ChatChannelType) = command(sender) {
-        val playerData = sender.getPlayerData()
-        playerData.currentChannel = channel
-        playerData.audience.sendMessage(text("Changed current channel to $channel.", GREEN))
-        PlayerDataManager.savePlayerData(playerData)
-    }
+    fun channelSwitchCommand(sender: CommandSender, @Argument("channel") channel: ChatChannelType) =
+        command(sender, channel.requiredRank) {
+            val playerData = sender.getPlayerData()
+            playerData.currentChannel = channel
+            playerData.audience.sendMessage(text("Changed current channel to $channel.", GREEN))
+            PlayerDataManager.savePlayerData(playerData)
+        }
 }

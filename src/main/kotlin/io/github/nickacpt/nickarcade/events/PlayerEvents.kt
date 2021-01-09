@@ -17,19 +17,19 @@ import net.minestom.server.utils.Position
 const val playerPlacedTag = "player_placed"
 fun registerPlayerEvents() {
 
+    // Create the instance
+    val lobbyInstance = SchematicManager.getSchematicInstance(SchematicName.LOBBY, 54f)?.instance
+        ?: throw Exception("Unable to find lobby schematic.")
+
+    //#PlayerInit
     event<PlayerLoginEvent>(forceBlocking = true) {
-
-        // Create the instance
-        val schematicInstance = SchematicManager.getSchematicInstance(SchematicName.LOBBY, 54f)?.instance
-            ?: throw Exception("Unable to find lobby schematic.")
-
         val player = player
 
         player.isAllowFlying = true
         player.isFlying = true
         player.gameMode = GameMode.CREATIVE
 
-        setSpawningInstance(schematicInstance)
+        setSpawningInstance(lobbyInstance)
         player.respawnPoint = Position(0.5f, 55.0f, 0.5f)
     }
 

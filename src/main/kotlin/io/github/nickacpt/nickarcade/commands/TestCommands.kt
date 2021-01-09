@@ -8,6 +8,10 @@ import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.game.MiniGameManager
+import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
+import io.github.nickacpt.nickarcade.game.definition.MiniGameType
+import io.github.nickacpt.nickarcade.game.definition.position.GamePosition
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
@@ -81,4 +85,22 @@ object TestCommands {
 
             pluginInstance.commandManager.manager.executeCommand(DebugSubjectPlayer(target.player!!, target), command)
         }
+
+    @CommandMethod("debugjoingame <type>")
+    fun joinDebugGame(sender: Player, @Argument("type") type: MiniGameType) = command(sender) {
+        val player = sender.getPlayerData()
+
+        val game = MiniGameManager.createGame(
+            type,
+            ArenaDefinition(
+                "Glacier",
+                1,
+                2,
+                "glacier",
+                54f,
+                GamePosition(0f, 60f, 0f)
+            )
+        )
+        game.addPlayer(player)
+    }
 }

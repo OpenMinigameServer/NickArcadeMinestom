@@ -107,7 +107,7 @@ object PartyCommands {
             return@command
         }
 
-        party.removeMember(target, true)
+        party.removeMember(target, true, true)
 
     }
 

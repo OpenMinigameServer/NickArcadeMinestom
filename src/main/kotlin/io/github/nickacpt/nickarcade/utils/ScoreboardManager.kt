@@ -12,20 +12,21 @@ import net.minestom.server.entity.Player
 
 object ScoreboardManager {
 
-    suspend fun Player.setupOwnScoreboard() {
+    suspend fun refreshPlayerTeams() {
         MinecraftServer.getConnectionManager().onlinePlayers.forEach {
-            val joinedPlayer = it
-            setPlayerInfo(this, joinedPlayer)
+            setPlayerInfo(it)
         }
     }
 
-    suspend fun setPlayerInfo(receiver: Player, joinedPlayer: Player) {
+    suspend fun setPlayerInfo(joinedPlayer: Player) {
         val data = joinedPlayer.getPlayerData()
 
         val playerName = data.displayName
         val teamManager = MinecraftServer.getTeamManager()
 
-        val team = teamManager.getTeam(playerName) ?: teamManager.createTeam(playerName)
+        teamManager.deleteTeam(playerName)
+        val team = teamManager.createTeam(playerName)
+
         val scoreData = ScoreboardDataProviderManager.computeData(data)
         team.prefix = text(scoreData.prefix ?: "").toNative()
         team.suffix = text(scoreData.suffix ?: "").toNative()

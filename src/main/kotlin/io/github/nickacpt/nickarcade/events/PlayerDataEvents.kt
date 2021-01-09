@@ -5,12 +5,11 @@ import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor.*
 import io.github.nickacpt.hypixelapi.utis.profile.Profile
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.player.PlayerData
-import io.github.nickacpt.nickarcade.events.impl.PlayerDataLeaveEvent
-import io.github.nickacpt.nickarcade.events.impl.PlayerDataReloadEvent
+import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
+import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.*
+import io.github.nickacpt.nickarcade.utils.ScoreboardManager.refreshPlayerTeams
 import io.github.nickacpt.nickarcade.utils.ScoreboardManager.removePlayerInfo
-import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setPlayerInfo
-import io.github.nickacpt.nickarcade.utils.ScoreboardManager.setupOwnScoreboard
 import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
 import io.github.nickacpt.nickarcade.utils.interop.uniqueId
@@ -38,10 +37,7 @@ fun registerPlayerDataEvents() {
         val minestomPlayer = player.player ?: return@event
         minestomPlayer.setDisplayProfile(player.displayOverrides.displayProfile)
         setupPermissions(player, minestomPlayer)
-        minestomPlayer.setupOwnScoreboard()
-
-        updateNewPlayerTeamForOnlinePlayers(minestomPlayer)
-
+        refreshPlayerTeams()
         showLobbyMessage()
     }
 }
@@ -58,7 +54,7 @@ fun Profile.toPlayerProfile(): PlayerProfile {
 
 fun setupPermissions(player: PlayerData, minestomPlayer: Player) {
     HypixelPackageRank.values().forEach {
-        if (player.hasAtLeastRank(it)) {
+        if (player.hasAtLeastRank(it, true)) {
             minestomPlayer.addPermission(Permission(it.name.toLowerCase()))
         }
     }
@@ -76,11 +72,5 @@ private fun PlayerDataReloadEvent.showLobbyMessage() {
             Component.text("$joinPrefix${player.getChatName()}§6 joined the lobby!$joinSuffix")
                 .hoverEvent(player.computeHoverEventComponent())
         )
-    }
-}
-
-private suspend fun updateNewPlayerTeamForOnlinePlayers(joinedPlayer: Player) {
-    MinecraftServer.getConnectionManager().onlinePlayers.forEach {
-        setPlayerInfo(it, joinedPlayer)
     }
 }

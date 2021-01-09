@@ -5,7 +5,6 @@ import net.kyori.adventure.audience.ForwardingAudience
 
 class PartyAudience(private val party: Party) : ForwardingAudience {
     override fun audiences(): Iterable<Audience> {
-        val players = listOf(party.leader, *party.members.toTypedArray())
-        return players.filter { it.isOnline }.map { it.audience }
+        return party.members.filter { it.isOnline }.map { it.audience }
     }
 }
