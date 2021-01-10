@@ -23,6 +23,8 @@ data class Party(
     val members: MutableList<PlayerData> = mutableListOf(),
     val pendingInvites: MutableList<PlayerData> = mutableListOf()
 ) {
+    var settings: PartySettings = PartySettings(this)
+
     public val nonLeaderMembers
         get() = members.filterNot { isLeader(it) }
 
@@ -176,7 +178,6 @@ data class Party(
         }
 
     val id: UUID = UUID.randomUUID()
-    var settings: PartySettings = PartySettings(this)
 
     @JsonIgnore
     val audience = PartyAudience(this)

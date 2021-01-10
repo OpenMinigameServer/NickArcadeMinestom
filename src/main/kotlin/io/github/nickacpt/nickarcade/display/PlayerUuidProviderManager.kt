@@ -1,7 +1,6 @@
 package io.github.nickacpt.nickarcade.display
 
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
-import io.github.nickacpt.nickarcade.utils.interop.name
 import kotlinx.coroutines.runBlocking
 import net.minestom.server.entity.Player
 import java.util.*
@@ -15,6 +14,7 @@ object PlayerUuidProviderManager {
         addProvider {
             val playerData = getPlayerData()
             val displayOverrides = playerData.displayOverrides
+            if (!displayOverrides.isProfileOverridden) return@addProvider null
             val displayProfile = displayOverrides.displayProfile
             return@addProvider displayProfile?.uuid
         }
@@ -37,12 +37,10 @@ object PlayerUuidProviderManager {
         providers.forEach { provider ->
             provider.getPlayerUuid(player)?.let {
                 id = it
-                println("Returning ${id} as the UUID for ${player.name}")
                 return id
             }
         }
 
-        println("Returning ${id} as the UUID for ${player.name}")
         return id
     }
 

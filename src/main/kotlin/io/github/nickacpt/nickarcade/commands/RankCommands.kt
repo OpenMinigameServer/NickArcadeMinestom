@@ -139,7 +139,13 @@ object RankCommands {
                     ' '
                 )
                 val message =
-                    if (valueFinal != null) "Successfully set ${player.displayName}'s $changed to $valueFinal" else "Successfully reset ${player.displayName}'s $changed"
+                    if (valueFinal != null) {
+                        var valueFinalToString = valueFinal.toString()
+                        if (valueFinal is Enum<*>) {
+                            valueFinalToString = valueFinal.name.toLowerCase().split('_').joinToString(" ").capitalize()
+                        }
+                        "Successfully set ${player.displayName}'s $changed to $valueFinalToString"
+                    } else "Successfully reset ${player.displayName}'s $changed"
 
                 PlayerDataManager.savePlayerData(player)
                 PlayerDataManager.reloadProfile(player)

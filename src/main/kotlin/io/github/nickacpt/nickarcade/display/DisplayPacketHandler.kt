@@ -24,9 +24,7 @@ object DisplayPacketHandler {
 
     //Maps original IDs to fake IDs
     private val playerIds = mutableMapOf<UUID, UUID>()
-    private fun PlayerInfoPacket.PlayerInfo.modifyUuid(
-        action: PlayerInfoPacket.Action,
-        extraActions: MutableList<PlayerInfoPacket.PlayerInfo>,
+    private fun PlayerInfoPacket.PlayerInfo.modifyUuid(action: PlayerInfoPacket.Action, extraActions: MutableList<PlayerInfoPacket.PlayerInfo>,
         players: MutableCollection<Player>
     ) {
         val player = MinecraftServer.getConnectionManager().getPlayer(uuid) ?: return

@@ -17,9 +17,11 @@ object SchematicManager {
         return SchematicInstance(schematic, yPosition)
     }
 
+    val schematicCache = mutableMapOf<String, SchematicInstance>()
     fun getSchematicInstance(name: String, yPosition: Float): SchematicInstance? {
+        schematicCache[name]?.let { return it }
         val schematic = getSchematicFileByName(name).takeIf { it.exists() } ?: return null
-        return SchematicInstance(schematic, yPosition)
+        return SchematicInstance(schematic, yPosition).also { schematicCache[name] = it }
     }
 
     fun getSchematicFileByName(name: SchematicName): File = getSchematicFileByName(name.name.toLowerCase())

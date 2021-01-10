@@ -129,6 +129,7 @@ private fun NickArcadeCommandHelper.registerCommands() {
     annotationParser.parse(TestCommands)
     annotationParser.parse(ImpersonateCommands)
     annotationParser.parse(PartyCommands)
+    PartyCommands.registerPartySettings(this.manager)
     annotationParser.parse(MiscCommands)
     annotationParser.parse(RankCommands)
     annotationParser.parse(ChatCommands)

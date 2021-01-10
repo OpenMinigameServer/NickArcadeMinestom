@@ -13,6 +13,8 @@ import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
+import io.github.nickacpt.nickarcade.game.Game
+import io.github.nickacpt.nickarcade.game.MiniGameManager
 import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.party.model.PartyManager
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
@@ -40,8 +42,13 @@ class PlayerData(
 ) {
     init {
         if (rawHypixelData != null) {
-            hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
+            hypixelData = HypixelApi.objectMapper .treeToValue<HypixelPlayer>(rawHypixelData)
         }
+    }
+
+    @JsonIgnore
+    fun getCurrentGame(): Game? {
+        return MiniGameManager.getCurrentGame(this)
     }
 
     @JsonIgnore

@@ -31,7 +31,7 @@ object MiniGameManager {
 
     fun isInGame(player: PlayerData): Boolean = getCurrentGame(player) != null
 
-    private fun getCurrentGame(player: PlayerData): Game? {
+    fun getCurrentGame(player: PlayerData): Game? {
         return playerGames[player.uuid]
     }
 

@@ -2,17 +2,88 @@ package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
+import cloud.commandframework.arguments.CommandArgument
+import cloud.commandframework.kotlin.MutableCommandBuilder
+import cloud.commandframework.kotlin.extension.buildAndRegister
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.party.model.Party
+import io.github.nickacpt.nickarcade.party.model.PartySetting
+import io.github.nickacpt.nickarcade.party.model.PartySettings
 import io.github.nickacpt.nickarcade.utils.command
+import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandManager
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.format.NamedTextColor
+import net.minestom.server.command.CommandSender
 import net.minestom.server.entity.Player
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.jvmErasure
 
 object PartyCommands {
+
+    fun registerPartySettings(manager: NickArcadeCommandManager<CommandSender>) {
+        val partySettingsKClass = PartySettings::class
+        val properties = partySettingsKClass.memberProperties.filter { it.hasAnnotation<PartySetting>() }
+        properties.forEach { prop ->
+            if (prop !is KMutableProperty1<PartySettings, *>) return@forEach
+            val setting = prop.findAnnotation<PartySetting>() ?: return@forEach
+
+            manager.buildAndRegister("party", aliases = arrayOf("p")) {
+                literal("settings", aliases = arrayOf("setting"))
+                literal(setting.aliases.first(), aliases = setting.aliases.drop(1).toTypedArray())
+                createPartyPropSubcommand(prop, setting)
+            }
+        }
+    }
+
+    private fun MutableCommandBuilder<CommandSender>.createPartyPropSubcommand(
+        prop: KProperty1<PartySettings, *>,
+        setting: PartySetting
+    ) {
+        senderType(Player::class.java)
+        val isToggle = prop.returnType.jvmErasure == Boolean::class
+        if (!isToggle) {
+            val returnType = prop.returnType.jvmErasure.java
+            this.argument(CommandArgument.ofType(returnType, "value"))
+        }
+
+        handler {
+            val partyProp = prop as KMutableProperty1<PartySettings, Any?>
+
+            val sender = it.sender as? Player ?: return@handler
+            command(sender, setting.requiredRank) {
+                val player = sender.getPlayerData()
+                val party = player.getCurrentParty(true) ?: return@command
+
+                if (isToggle) {
+                    val newValue = (partyProp.get(party.settings) as Boolean).not()
+                    notifyToggleChanged(party, player, setting, newValue)
+                    partyProp.set(party.settings, newValue)
+                } else {
+                    partyProp.set(party.settings, it["value"])
+                }
+            }
+        }
+    }
+
+    private fun notifyToggleChanged(party: Party, player: PlayerData, setting: PartySetting, newValue: Boolean) {
+        val toggleMessage = if (newValue) "enabled" else "disabled"
+        val colour = if (newValue) NamedTextColor.GREEN else NamedTextColor.RED
+
+        party.audience.sendMessage(
+            separator {
+                append(text(player.getChatName(true)))
+                append(text(" has $toggleMessage ${setting.description}", colour))
+            }
+        )
+    }
 
     @CommandMethod("party|p <target>")
     fun invitePlayerShort(senderPlayer: Player, @Argument("target") target: PlayerData) =

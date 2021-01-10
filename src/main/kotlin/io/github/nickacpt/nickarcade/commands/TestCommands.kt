@@ -12,16 +12,16 @@ import io.github.nickacpt.nickarcade.game.MiniGameManager
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
 import io.github.nickacpt.nickarcade.game.definition.position.GamePosition
-import io.github.nickacpt.nickarcade.utils.asAudience
-import io.github.nickacpt.nickarcade.utils.command
+import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.debugsubjects.DebugSubjectPlayer
-import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.entity.Player
+import net.minestom.server.event.player.PlayerMoveEvent
+import net.minestom.server.instance.block.Block
 import java.util.*
 import kotlin.random.Random
 
@@ -85,6 +85,24 @@ object TestCommands {
 
             pluginInstance.commandManager.manager.executeCommand(DebugSubjectPlayer(target.player!!, target), command)
         }
+
+    @RequiredRank(HypixelPackageRank.ADMIN)
+    @CommandMethod("debugcreateparty")
+    fun createDebugParty(sender: Player) = command(sender) {
+        sender.getPlayerData().getOrCreateParty()
+    }
+
+    @RequiredRank(HypixelPackageRank.ADMIN)
+    @CommandMethod("scaffold")
+    fun scaffold(sender: Player) = command(sender) {
+        event<PlayerMoveEvent> {
+            this.player.cooldown("scaffold", 5.ticks) {
+                val instance = this.player.instance ?: return@cooldown
+                val blocc = this.newPosition.toBlockPosition().subtract(0, 2, 0)
+                instance.setBlock(blocc, Block.STONE)
+            }
+        }
+    }
 
     @CommandMethod("debugjoingame <type>")
     fun joinDebugGame(sender: Player, @Argument("type") type: MiniGameType) = command(sender) {

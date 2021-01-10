@@ -36,6 +36,7 @@ fun registerPlayerDataEvents() {
 
         val minestomPlayer = player.player ?: return@event
         minestomPlayer.setDisplayProfile(player.displayOverrides.displayProfile)
+        player.displayOverrides.isProfileOverridden = true
         setupPermissions(player, minestomPlayer)
         refreshPlayerTeams()
         showLobbyMessage()

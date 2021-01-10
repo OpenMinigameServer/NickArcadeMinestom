@@ -30,7 +30,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation(minestom("a6e5dbc60e0a2217f6912ef459637cda434e0184"))
+    implementation(minestom("23e70208a8"))
     compileOnly("org.jetbrains:annotations:20.1.0")
 
     implementation(project(":Hypixel-API"))
@@ -54,7 +54,7 @@ dependencies {
 
     implementation("net.kyori:adventure-api:4.3.0")
     implementation("net.kyori:adventure-platform-api:4.0.0-SNAPSHOT")
-    implementation("com.github.mworzala:adventure-platform-minestom:f1d1c3adc5") {
+    implementation("com.github.mworzala:adventure-platform-minestom:b61596ccef") {
         exclude(module = "Minestom")
     }
     implementation("com.github.sejtam10.MineSchem:MineSchem-Core:f461927dd1") {

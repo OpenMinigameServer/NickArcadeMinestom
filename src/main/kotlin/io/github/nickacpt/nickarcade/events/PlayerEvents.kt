@@ -14,12 +14,17 @@ import net.minestom.server.event.player.PlayerLoginEvent
 import net.minestom.server.item.Material
 import net.minestom.server.utils.Position
 
+
+val lobbyInstance by lazy {
+    SchematicManager.getSchematicInstance(SchematicName.LOBBY, 54f)?.instance
+        ?: throw Exception("Unable to find lobby schematic.")
+}
+
 const val playerPlacedTag = "player_placed"
 fun registerPlayerEvents() {
 
     // Create the instance
-    val lobbyInstance = SchematicManager.getSchematicInstance(SchematicName.LOBBY, 54f)?.instance
-        ?: throw Exception("Unable to find lobby schematic.")
+    lobbyInstance
 
     //#PlayerInit
     event<PlayerLoginEvent>(forceBlocking = true) {

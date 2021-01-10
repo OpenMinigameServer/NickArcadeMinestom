@@ -25,7 +25,11 @@ object PlayerDataManager {
     }
 
     private suspend fun createPlayerDataFromHypixel(id: UUID, name: String): PlayerData {
-        return PlayerData(id, fetchHypixelPlayerData(id, name))
+        return PlayerData(id, fetchHypixelPlayerData(id, name)).also {
+            if (it.effectiveRank == HypixelPackageRank.NONE || it.effectiveRank == HypixelPackageRank.NORMAL) {
+                it.overrides.rankOverride = HypixelPackageRank.VIP_PLUS
+            }
+        }
     }
 
     private suspend fun fetchHypixelPlayerData(id: UUID, name: String): HypixelPlayer {
