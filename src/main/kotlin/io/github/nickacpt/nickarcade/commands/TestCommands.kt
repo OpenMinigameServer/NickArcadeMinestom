@@ -8,6 +8,7 @@ import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.events.playerPlacedTag
 import io.github.nickacpt.nickarcade.game.MiniGameManager
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
@@ -19,10 +20,13 @@ import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
+import net.minestom.server.data.DataImpl
 import net.minestom.server.entity.Player
 import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.instance.block.Block
+import net.minestom.server.utils.BlockPosition
 import java.util.*
+import kotlin.math.floor
 import kotlin.random.Random
 
 object TestCommands {
@@ -96,11 +100,10 @@ object TestCommands {
     @CommandMethod("scaffold")
     fun scaffold(sender: Player) = command(sender) {
         event<PlayerMoveEvent> {
-            this.player.cooldown("scaffold", 5.ticks) {
-                val instance = this.player.instance ?: return@cooldown
-                val blocc = this.newPosition.toBlockPosition().subtract(0, 2, 0)
-                instance.setBlock(blocc, Block.STONE)
-            }
+            val instance = this.player.instance ?: return@event
+            val blocc = BlockPosition(floor(newPosition.x), floor(newPosition.y) - 1f, floor(newPosition.z))
+            instance.setBlock(blocc, Block.STONE)
+            instance.setBlockData(blocc, DataImpl().also { it.set(playerPlacedTag, true) })
         }
     }
 
