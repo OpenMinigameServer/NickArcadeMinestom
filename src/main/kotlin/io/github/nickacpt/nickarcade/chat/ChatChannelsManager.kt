@@ -2,10 +2,7 @@ package io.github.nickacpt.nickarcade.chat
 
 import cloud.commandframework.arguments.standard.StringArgument
 import cloud.commandframework.kotlin.extension.buildAndRegister
-import io.github.nickacpt.nickarcade.chat.impl.AbstractChatChannel
-import io.github.nickacpt.nickarcade.chat.impl.AllChatChannel
-import io.github.nickacpt.nickarcade.chat.impl.PartyChatChannel
-import io.github.nickacpt.nickarcade.chat.impl.StaffChatChannel
+import io.github.nickacpt.nickarcade.chat.impl.*
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
@@ -18,6 +15,7 @@ object ChatChannelsManager {
         registerChannel(defaultChannel)
         registerChannel(StaffChatChannel)
         registerChannel(PartyChatChannel)
+        registerChannel(UserInputChannel)
     }
 
     private fun registerChannel(channel: AbstractChatChannel) {
@@ -29,11 +27,11 @@ object ChatChannelsManager {
     }
 
     fun registerChatChannelCommands(commandHelper: NickArcadeCommandHelper) {
-        channels.forEach { (type, channel) ->
+        channels.filterNot { it.key.isInternal }.forEach { (type, channel) ->
             val smallLetter = type.name.first().toLowerCase()
             commandHelper.manager.buildAndRegister("${smallLetter}chat", aliases = arrayOf("${smallLetter}c")) {
                 argument {
-                     StringArgument.greedy("text")
+                    StringArgument.greedy("text")
                 }
                 handler {
                     command(it.sender, type.requiredRank) {

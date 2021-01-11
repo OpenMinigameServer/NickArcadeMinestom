@@ -17,8 +17,14 @@ object PartyManager {
     }
 
     fun addMember(party: Party, player: PlayerData) {
-        if (party.members.none { it == player })
+        val originalParty = player.getCurrentParty()
+        if (originalParty != null && originalParty != party) {
+            removeMember(originalParty, player)
+        }
+
+        if (party.members.none { it == player }) {
             party.members.add(player)
+        }
         playerParty[player.uuid] = party
     }
 
@@ -36,6 +42,9 @@ object PartyManager {
         }
         party.members.remove(player)
         playerParty.remove(player.uuid)
+        if (party.totalMembersCount == 0) {
+            party.disband()
+        }
     }
 
     fun getParty(player: PlayerData): Party? {

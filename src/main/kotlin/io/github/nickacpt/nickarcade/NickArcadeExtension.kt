@@ -11,6 +11,7 @@ import io.github.nickacpt.nickarcade.display.DisplayPacketHandler.registerDispla
 import io.github.nickacpt.nickarcade.events.*
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicManager
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicName
+import io.github.nickacpt.nickarcade.utils.ComponentUtils
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
@@ -126,6 +127,8 @@ fun registerFireballEvents() {
 }
 
 private fun NickArcadeCommandHelper.registerCommands() {
+    annotationParser.parse(NickCommand)
+    annotationParser.parse(ComponentUtils)
     annotationParser.parse(TestCommands)
     annotationParser.parse(ImpersonateCommands)
     annotationParser.parse(PartyCommands)

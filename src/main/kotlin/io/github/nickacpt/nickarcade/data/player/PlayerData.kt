@@ -38,11 +38,27 @@ class PlayerData(
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
     val displayOverrides: DisplayOverrides = DisplayOverrides(),
-//    @JsonIgnore var permission: Permission? = null
 ) {
+    @JsonIgnore
+    val extraData = mutableMapOf<String, Any?>()
+
+    @JsonIgnore
+    operator fun <T> get(dataTag: ExtraDataTag<T>): T? {
+        return extraData[dataTag.tagName] as? T?
+    }
+
+    @JsonIgnore
+    operator fun <T> set(dataTag: ExtraDataTag<T>, value: T) {
+        if (value == null) {
+            extraData.remove(dataTag.tagName)
+            return
+        }
+        extraData[dataTag.tagName] = value
+    }
+
     init {
         if (rawHypixelData != null) {
-            hypixelData = HypixelApi.objectMapper .treeToValue<HypixelPlayer>(rawHypixelData)
+            hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
         }
     }
 

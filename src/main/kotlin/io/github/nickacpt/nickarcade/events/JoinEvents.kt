@@ -23,22 +23,7 @@ import net.minestom.server.event.player.*
 import java.util.*
 
 fun registerJoinEvents() {
-    MinecraftServer.getConnectionManager().setUuidProvider { _, username ->
-        return@setUuidProvider runBlocking {
-            runCatching { ProfileApi.getProfileByName(username)?.uniqueId }.getOrNull() ?: UUID.randomUUID()
-        }
-    }
-
-    event<PlayerSkinInitEvent>(forceBlocking = true) {
-        val profile = ProfileApi.getProfileByName(this.player.name) ?: return@event
-//
-//        val properties: List<ProfileProperty> = profile.toPlayerProfile().properties
-//        if (properties.isNotEmpty()) {
-//            val (_, value1, signature) = properties.stream().findFirst().get()
-//            skin = PlayerSkin(value1, signature)
-//        }
-        player.skin = profile.toPlayerProfile().toSkin()
-    }
+    //registerOfflineModeOnlineIds()
     registerPreLoginEvent()
 
     event<PlayerLoginEvent> {
@@ -63,15 +48,35 @@ fun registerJoinEvents() {
     }
 }
 
+private fun registerOfflineModeOnlineIds() {
+    MinecraftServer.getConnectionManager().setUuidProvider { _, username ->
+        return@setUuidProvider runBlocking {
+            runCatching { ProfileApi.getProfileByName(username)?.uniqueId }.getOrNull() ?: UUID.randomUUID()
+        }
+    }
 
+    event<PlayerSkinInitEvent>(forceBlocking = true) {
+        val profile = ProfileApi.getProfileByName(this.player.name) ?: return@event
+//
+//        val properties: List<ProfileProperty> = profile.toPlayerProfile().properties
+//        if (properties.isNotEmpty()) {
+//            val (_, value1, signature) = properties.stream().findFirst().get()
+//            skin = PlayerSkin(value1, signature)
+//        }
+        player.skin = profile.toPlayerProfile().toSkin()
+    }
+}
+
+
+val validNamePattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
 private fun registerPreLoginEvent() {
-    val validPattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
     event<AsyncPlayerPreLoginEvent> {
-        val isValidName = validPattern.matchEntire(this.username) != null
+        val isValidName = validNamePattern.matchEntire(this.username) != null
 
         if (!isValidName) {
             player.kick("You are using an invalid Minecraft name and thus you got denied access.")
         } else if (PlayerDataManager.isPlayerDataLoaded(this.playerUuid)) {
+            PlayerDataManager.saveAndRemovePlayerData(this.playerUuid)
             player.kick("Please wait while we save your data to join again.")
         }
     }

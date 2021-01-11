@@ -2,15 +2,15 @@ package io.github.nickacpt.hypixelapi.models
 
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 
-enum class HypixelPackageRank(private val prefix: String, private val chatMessagePrefix: String = "§r") {
+enum class HypixelPackageRank(val defaultPrefix: String, private val chatMessagePrefix: String = "§r") {
     NONE("§7", "§7"),
     NORMAL(NONE),
     VIP("§a[VIP] "),
     VIP_PLUS("§a[VIP§6+§a] "),
     MVP("§b[MVP] "),
-    MVP_PLUS("§b[MVP+] "),
-    SUPERSTAR("§6[MVP++] "),
-    YOUTUBER("§c[§rYOUTUBE§c] "),
+    MVP_PLUS("§b[MVP§c+§b] "),
+    SUPERSTAR("§6[MVP§c++§6] "),
+    YOUTUBER("§c[§fYOUTUBE§c] "),
     HELPER("§9[HELPER] "),
     MODERATOR("§2[MOD] "),
     ADMIN("§c[ADMIN] ");
@@ -29,12 +29,12 @@ enum class HypixelPackageRank(private val prefix: String, private val chatMessag
         } else if (this == MVP_PLUS) {
             return "§b[MVP$plusColorFormat+§b] "
         }
-        return prefix
+        return defaultPrefix
     }
 
     fun getPlusColor(player: HypixelPlayer): MinecraftChatColor {
         return if (this == VIP_PLUS) MinecraftChatColor.GOLD else player.rankPlusColor
     }
 
-    constructor(otherRank: HypixelPackageRank) : this(otherRank.prefix, otherRank.chatMessagePrefix)
+    constructor(otherRank: HypixelPackageRank) : this(otherRank.defaultPrefix, otherRank.chatMessagePrefix)
 }

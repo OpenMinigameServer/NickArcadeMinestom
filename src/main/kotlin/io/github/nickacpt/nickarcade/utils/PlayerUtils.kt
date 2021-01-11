@@ -36,7 +36,7 @@ var Player.playerProfile: PlayerProfile
         } else {
             runBlocking {
                 kotlin.runCatching {
-                    ProfileApi.getProfileService().findById(uuid)?.toPlayerProfile()?.properties?.let {
+                    getPlayerProfile()?.properties?.let {
                         properties.addAll(it)
                     }
                 }
@@ -53,6 +53,9 @@ var Player.playerProfile: PlayerProfile
             skin = PlayerSkin(value1, signature)
         }
     }
+
+suspend fun Player.getPlayerProfile() =
+    ProfileApi.getProfileById(uuid)?.toPlayerProfile()
 
 var Player.actualPlayerProfile: PlayerProfile?
     get() = playerProfile

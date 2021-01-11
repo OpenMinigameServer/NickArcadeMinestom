@@ -10,9 +10,13 @@ import net.minestom.server.chat.ChatParser.COLOR_CHAR
 import net.minestom.server.chat.JsonMessage
 import net.minestom.server.entity.Player
 import net.minestom.server.event.Event
+import org.jetbrains.annotations.Contract
+import org.jetbrains.annotations.Nullable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.regex.Pattern
+
 
 object InteropExtensions {
     val legacyColorCodesMap = mutableMapOf<Char, MinecraftChatColor>()
@@ -45,6 +49,22 @@ object InteropExtensions {
 
 fun ComponentLike.toNative(): JsonMessage {
     return MinestomComponentSerializer.get().serialize(this.asComponent())
+}
+
+
+private val STRIP_COLOR_PATTERN: Pattern = Pattern.compile("(?i)$COLOR_CHAR[0-9A-FK-ORX]")
+
+/**
+ * Strips the given message of all color codes
+ *
+ * @param input String to strip of color
+ * @return A copy of the input string, without any coloring
+ */
+@Contract("!null -> !null; null -> null")
+fun stripColor(@Nullable input: String?): String {
+    return if (input == null) {
+        ""
+    } else STRIP_COLOR_PATTERN.matcher(input).replaceAll("")
 }
 
 /**

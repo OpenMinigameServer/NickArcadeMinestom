@@ -4,6 +4,7 @@ import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor.*
 import io.github.nickacpt.hypixelapi.utis.profile.Profile
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
+import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
@@ -25,6 +26,9 @@ fun registerPlayerDataEvents() {
         val data = player
         val player = data.player ?: return@event
 
+        if (data.currentChannel.isInternal) {
+            data.currentChannel = ChatChannelType.ALL
+        }
         player.actualPlayerProfile = ProfileApi.getProfileService().findById(player.uniqueId)?.toPlayerProfile()
 
         MinecraftServer.getConnectionManager().onlinePlayers.forEach {

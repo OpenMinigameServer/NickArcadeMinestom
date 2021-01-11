@@ -4,6 +4,6 @@ import net.minestom.server.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(Player.class)
-public class PlayerMixin {
+public abstract class PlayerMixin {
 
 }

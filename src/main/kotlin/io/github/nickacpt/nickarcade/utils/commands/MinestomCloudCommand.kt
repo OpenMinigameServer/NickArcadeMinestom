@@ -23,7 +23,6 @@ import java.util.concurrent.CompletionException
 import java.util.function.BiConsumer
 import net.minestom.server.command.builder.Command as MinestomCommand
 
-
 class MinestomCloudCommand<C : CommandSender>(
     val command: Command<C>,
     private val manager: CommandManager<C>,
@@ -32,6 +31,9 @@ class MinestomCloudCommand<C : CommandSender>(
 ) : MinestomCommand(name, *aliases) {
 
     init {
+        if (command.isHidden) {
+            setCondition { _, commandString -> commandString != null }
+        }
         registerCommandArguments(command)
     }
 

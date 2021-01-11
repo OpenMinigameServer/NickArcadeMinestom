@@ -41,6 +41,5 @@ object MiscCommands {
         } else {
             player.audience.sendMessage(text("You are already on a lobby!", RED))
         }
-
     }
 }
