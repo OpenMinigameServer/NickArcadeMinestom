@@ -2,9 +2,12 @@ package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.CommandMethod
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
+import io.github.nickacpt.hypixelapi.utis.profile.Profile
+import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
 import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.display.NickContext
+import io.github.nickacpt.nickarcade.events.toPlayerProfile
 import io.github.nickacpt.nickarcade.events.validNamePattern
 import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
@@ -12,6 +15,7 @@ import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
 import io.github.nickacpt.nickarcade.utils.interop.getLastColors
 import io.github.nickacpt.nickarcade.utils.interop.launch
+import io.github.nickacpt.nickarcade.utils.profiles.DumpedProfile
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.profiles.setDisplayProfile
 import net.kyori.adventure.inventory.Book
@@ -20,6 +24,7 @@ import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.NamedTextColor.GREEN
+import net.kyori.adventure.text.format.NamedTextColor.RED
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.entity.Player
@@ -145,7 +150,7 @@ object NickCommand {
                 text("➤ My normal skin").hoverEvent(
                     text("Click here to use your normal skin")
                         .append(newline())
-                        .append(text("WARNING: ", NamedTextColor.RED))
+                        .append(text("WARNING: ", RED))
                         .append(text("Players will be able to know who you are if you use this option."))
 
                 ).clickEvent {
@@ -177,21 +182,30 @@ object NickCommand {
                     ).clickEvent {
                         player.asAudience.sendMessage(
                             text(
-                                "Please type the name of the skin that you want to use in chat.",
+                                "Please type a name of the skin that you want to use in chat.",
                                 GREEN
                             )
                         )
                         ChatInput.requestInput(this, onSuccess = { name ->
-                            val skin = ProfilesManager.profiles.firstOrNull { it.name == name }
-                            if (skin != null) {
-                                pluginInstance.launch {
-                                    setContextSkinAndMoveToPageFour(
-                                        context,
-                                        skin.asPlayerProfile()
+                            pluginInstance.launch {
+                                val skin = ProfilesManager.profiles.firstOrNull { it.name == name }
+                                    ?: ProfileApi.getProfileByName(name)?.takeIf { !it.isError }?.toDumpedProfile()
+                                if (skin != null) {
+                                    pluginInstance.launch {
+                                        setContextSkinAndMoveToPageFour(
+                                            context,
+                                            skin.asPlayerProfile()
+                                        )
+                                    }
+                                } else {
+                                    player.asAudience.sendMessage(
+                                        text(
+                                            "There is no player with that name!",
+                                            RED
+                                        )
                                     )
                                 }
                             }
-
                         })
 
                     }.append(newline())
@@ -199,14 +213,13 @@ object NickCommand {
             }
 
             val profile = data.displayOverrides.displayProfile
-            if (false && profile != null) {
+            if (profile != null) {
                 page.append(
-                    text("➤ Reuse ${profile.name}").hoverEvent(
-                        text("Click here to use a random preset skin")
+                    text("➤ Reuse current /nick skin ('${profile.name}')").hoverEvent(
+                        text("Click here to reuse the current /nick skin")
                     ).clickEvent {
                         setContextSkinAndMoveToPageFour(
-                            context, ProfilesManager.profiles.random().copy()
-                                .asPlayerProfile()
+                            context, profile.asPlayerProfile()
                         )
                     }.append(newline())
                 )
@@ -318,6 +331,10 @@ object NickCommand {
         sender.applyNickContext(null)
     }
 
+}
+
+private fun Profile.toDumpedProfile(): DumpedProfile {
+    return toPlayerProfile().toDumpedProfile()
 }
 
 private suspend fun Player.applyNickContext(context: NickContext?) {
