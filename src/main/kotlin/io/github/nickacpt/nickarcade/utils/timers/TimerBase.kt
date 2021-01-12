@@ -8,7 +8,7 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 
 
-abstract class TimerBase constructor(private val duration: Duration, val stepTime: Duration = 1.seconds) {
+abstract class TimerBase constructor(private val duration: Duration, private val stepTime: Duration = 1.seconds) {
     abstract suspend fun onTick(duration: Duration, scope: CoroutineScope)
 
     var elapsedTime: Duration = Duration.ZERO

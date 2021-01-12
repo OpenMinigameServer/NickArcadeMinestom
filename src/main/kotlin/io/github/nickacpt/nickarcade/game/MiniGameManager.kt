@@ -70,7 +70,7 @@ object MiniGameManager {
 
     fun removePlayer(game: Game, player: PlayerData) {
         game.members.removeIf { it == player }
-        playerGames[player.uuid] = game
+        playerGames.remove(player.uuid)
         PlayerLeaveGameEvent(game, player).callEvent()
     }
 }

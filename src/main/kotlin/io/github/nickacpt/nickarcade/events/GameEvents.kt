@@ -22,6 +22,8 @@ fun registerGameEvents() {
             it.append(text(player.getChatName(colourPrefixOnly = true)))
             it.append(text(" has quit!", NamedTextColor.YELLOW))
         })
-        player.player?.setInstance(lobbyInstance)
+        val minestomPlayer = player.player ?: return@event
+        minestomPlayer.setInstance(lobbyInstance)
+        minestomPlayer.respawn()
     }
 }

@@ -4,10 +4,9 @@ import dev.sejtam.mineschem.core.schematic.ISchematic
 import dev.sejtam.mineschem.core.schematic.SpongeSchematic
 import io.github.nickacpt.nickarcade.SchematicSizeHelper
 import io.github.nickacpt.nickarcade.utils.EmptyChunkGenerator
+import io.github.nickacpt.nickarcade.utils.buildCentered
 import net.minestom.server.MinecraftServer
 import net.minestom.server.instance.Instance
-import net.minestom.server.utils.Position
-import net.minestom.server.utils.chunk.ChunkUtils
 import java.io.File
 
 private fun createEmptyInstance() = MinecraftServer.getInstanceManager().createInstanceContainer().apply {
@@ -18,8 +17,8 @@ private fun createEmptyInstance() = MinecraftServer.getInstanceManager().createI
 }
 
 class SchematicInstance(
-    schematic: ISchematic,
-    yPosition: Float,
+    val schematic: ISchematic,
+    val yPosition: Float,
     val instance: Instance = createEmptyInstance()
 ) {
 
@@ -30,26 +29,16 @@ class SchematicInstance(
         ), yPosition, instance
     )
 
+    val finalYPosition by lazy { yPosition - ((schematic as SchematicSizeHelper).height / 2f) }
     init {
-        val schematicSizeHelper = schematic as SchematicSizeHelper
         schematic.read()
 
-        val x = -(schematicSizeHelper.width / 2f)
-        val z = -(schematicSizeHelper.length / 2f)
-
-        for (xValue in x.toInt()..(x + schematic.width).toInt()) {
-            for (zValue in z.toInt()..(z + schematic.length).toInt()) {
-
-                instance.loadChunk(ChunkUtils.getChunkCoordinate(xValue), ChunkUtils.getChunkCoordinate(zValue))
-            }
-        }
-
-        schematic.build(
-            Position(
-                x,
-                yPosition - (schematicSizeHelper.height / 2f),
-                z
-            )
+        schematic.buildCentered(
+            0f,
+            finalYPosition,
+            0f,
+            instance
         )
     }
+
 }
