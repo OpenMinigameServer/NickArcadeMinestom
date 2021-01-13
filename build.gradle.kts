@@ -30,7 +30,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation(minestom("23e70208a8"))
+    implementation(minestom("ea8b8ea41e"))
     compileOnly("org.jetbrains:annotations:20.1.0")
 
     implementation(project(":Hypixel-API"))

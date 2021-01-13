@@ -61,6 +61,12 @@ object PartyCommands {
             command(sender, setting.requiredRank) {
                 val player = sender.getPlayerData()
                 val party = player.getCurrentParty(true) ?: return@command
+                if (!party.isLeader(player)) {
+                    player.audience.sendMessage(separator {
+                        append(text("You are not the party leader!", NamedTextColor.RED))
+                    })
+                    return@command
+                }
 
                 if (isToggle) {
                     val newValue = (partyProp.get(party.settings) as Boolean).not()

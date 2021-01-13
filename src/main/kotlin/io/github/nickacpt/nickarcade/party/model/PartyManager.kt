@@ -28,8 +28,8 @@ object PartyManager {
         playerParty[player.uuid] = party
     }
 
-    fun removeMember(party: Party, player: PlayerData) {
-        if (party.totalMembersCount > 1 && party.isLeader(player)) {
+    fun removeMember(party: Party, player: PlayerData, isDisband: Boolean = false) {
+        if (!isDisband && party.totalMembersCount > 1 && party.isLeader(player)) {
             val oldOwner = party.leader
             val newOwner = party.nonLeaderMembers.first()
             party.switchOwner(newOwner)

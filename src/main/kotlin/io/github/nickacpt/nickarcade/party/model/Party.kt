@@ -71,18 +71,18 @@ data class Party(
             append(text(" seconds to accept.", NamedTextColor.YELLOW))
         })
 
+        val command = "/party accept ${sender.actualDisplayName}"
         target.audience.sendMessage(separator(NamedTextColor.BLUE) {
             append(text(sender.getChatName(true)))
             append(text(" invited you to their party!", NamedTextColor.YELLOW))
             append(newline())
-            val command = "/party accept ${sender.actualDisplayName}"
             append(text {
                 it.append(text("You have ", NamedTextColor.YELLOW))
                 it.append(text(partyExpiryTime.inSeconds.toInt(), NamedTextColor.RED))
                 it.append(text(" seconds to accept. ", NamedTextColor.YELLOW))
                 it.append(text("Click here to join!", NamedTextColor.GOLD))
-            }.clickEvent(ClickEvent.runCommand(command))).hoverEvent(text("Click to run $command"))
-        })
+            })
+        }.clickEvent(ClickEvent.runCommand(command)).hoverEvent(text("Click to run $command")))
     }
 
     private fun scheduleInviteExpirationActions(
@@ -119,7 +119,12 @@ data class Party(
         }
     }
 
-    fun removeMember(member: PlayerData, broadcast: Boolean = false, isKick: Boolean = false) {
+    fun removeMember(
+        member: PlayerData,
+        broadcast: Boolean = false,
+        isKick: Boolean = false,
+        isDisband: Boolean = false
+    ) {
         if (broadcast) {
             audience.sendMessage(separator {
                 append(text(member.getChatName(true)))
@@ -131,7 +136,7 @@ data class Party(
             })
         }
 
-        PartyManager.removeMember(this, member)
+        PartyManager.removeMember(this, member, isDisband)
     }
 
     private fun TextComponent.Builder.appendPlayerData(it: PlayerData) {
@@ -142,9 +147,10 @@ data class Party(
     }
 
     fun disband() {
-        val list = members + leader
+        if (totalMembersCount == 0) return
+        val list = members.toList()
         list.forEach {
-            removeMember(it)
+            removeMember(it, isDisband = true)
         }
     }
 

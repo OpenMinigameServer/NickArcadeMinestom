@@ -21,7 +21,6 @@ fun main(args: Array<String>) {
     PlacementRules.init()
     MinecraftServer.setGroupedPacket(false)
 
-
     server.start(
         "0.0.0.0", 25566
     ) { connection, responseData ->
