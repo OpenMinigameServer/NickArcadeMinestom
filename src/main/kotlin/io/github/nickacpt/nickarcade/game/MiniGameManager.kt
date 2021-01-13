@@ -36,15 +36,15 @@ object MiniGameManager {
     }
 
     fun addPlayer(game: Game, player: PlayerData) {
-        val playerParty = player.getCurrentParty(false)
-        if (playerParty != null) {
-            if (playerParty.isLeader(player)) {
-                playerParty.members.forEach {
-                    addPlayerInternal(it, game)
-                }
-            }
-            return
-        }
+//        val playerParty = player.getCurrentParty(false)
+//        if (playerParty != null) {
+//            if (playerParty.isLeader(player)) {
+//                playerParty.members.forEach {
+//                    addPlayerInternal(it, game)
+//                }
+//            }
+//            return
+//        }
 
         addPlayerInternal(player, game)
     }

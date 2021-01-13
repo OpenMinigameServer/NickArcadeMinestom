@@ -19,33 +19,67 @@ import kotlin.time.minutes
 val partyExpiryTime = 1.minutes
 
 data class Party(
-    var leader: PlayerData,
-    val members: MutableList<PlayerData> = mutableListOf(),
-    val pendingInvites: MutableList<PlayerData> = mutableListOf()
+    private val members: MutableMap<UUID, PartyMember> = mutableMapOf()
 ) {
+    val membersList
+        get() = members.values
+
+    fun getMembersWithRole(role: MemberRole): List<PartyMember> {
+        return membersList.filter { it.role == role }
+    }
+
     var settings: PartySettings = PartySettings(this)
 
-    public val nonLeaderMembers
-        get() = members.filterNot { isLeader(it) }
+    val nonLeaderMembers
+        get() = getMembersWithRole(MemberRole.MEMBER)
 
-    public val membersCount
+    private val nonLeaderMembersCount
         get() = nonLeaderMembers.count()
 
-    public val totalMembersCount
+    fun isLeader(it: PartyMember): Boolean {
+        return it.role == MemberRole.LEADER
+    }
+
+    fun isLeader(it: PlayerData): Boolean {
+        return getPlayerRole(it) == MemberRole.LEADER
+    }
+
+    fun getPlayerRole(player: PlayerData): MemberRole {
+        return members[player.uuid]?.role ?: MemberRole.NONE
+    }
+
+    val totalMembersCount
         get() = members.count()
 
     fun hasPendingInvite(player: PlayerData): Boolean {
-        return pendingInvites.contains(player)
+        return getPlayerRole(player) == MemberRole.PENDING_INVITE
     }
 
     fun switchOwner(newOwner: PlayerData, addOldOwner: Boolean = true) {
-        if (addOldOwner)
-            addMember(leader)
-        leader = newOwner
-        addMember(newOwner)
+        if (addOldOwner) {
+            getMembersWithRole(MemberRole.LEADER).forEach {
+                setRole(it, MemberRole.MEMBER)
+            }
+        }
+        setRole(newOwner, MemberRole.LEADER)
+    }
+
+    private fun setRole(it: PartyMember, role: MemberRole) {
+        it.role = role
+    }
+
+    private fun setRole(it: PlayerData, role: MemberRole) {
+        members[it.uuid]?.role = role
     }
 
     fun invitePlayer(sender: PlayerData, target: PlayerData) {
+        if (!canInvitePlayers(sender)) {
+            sender.audience.sendMessage(separator {
+                append(text("You can't invite players to this party!", NamedTextColor.RED))
+            })
+            return
+        }
+
         if (hasPendingInvite(target)) {
             sender.audience.sendMessage(separator {
                 append(text(target.getChatName(true)))
@@ -85,16 +119,20 @@ data class Party(
         }.clickEvent(ClickEvent.runCommand(command)).hoverEvent(text("Click to run $command")))
     }
 
+    private fun canInvitePlayers(sender: PlayerData): Boolean {
+        return getPlayerRole(sender).canInvitePlayers
+    }
+
     private fun scheduleInviteExpirationActions(
         sender: PlayerData,
         target: PlayerData
     ): suspend CoroutineScope.() -> Unit = scope@{
-        pendingInvites.add(target)
+        addMember(target, role = MemberRole.PENDING_INVITE)
         delay(partyExpiryTime)
         if (!hasPendingInvite(target)) {
             return@scope
         }
-        pendingInvites.remove(target)
+        removeMember(target)
         target.audience.sendMessage(separator {
             append(text("The party invite from ", NamedTextColor.YELLOW))
             append(text(sender.getChatName(true)))
@@ -108,22 +146,29 @@ data class Party(
         })
     }
 
-    fun addMember(member: PlayerData, broadcast: Boolean = false) {
-        PartyManager.addMember(this, member)
+    fun addMember(member: PlayerData, broadcast: Boolean = false, role: MemberRole = MemberRole.MEMBER) {
+        //Remove member from old party
+        member.getCurrentParty()?.removeMember(member, broadcast = true)
 
-        if (broadcast) {
-            audience.sendMessage(separator {
-                append(text(member.getChatName(true)))
-                append(text(" joined the party.", NamedTextColor.YELLOW))
-            })
+        this.members.putIfAbsent(member.uuid, PartyMember(member, role))
+        member.setCurrentParty(this)
+
+        if (broadcast && role >= MemberRole.MEMBER) {
+            broadcastPlayerJoin(member)
         }
+    }
+
+    private fun broadcastPlayerJoin(member: PlayerData) {
+        audience.sendMessage(separator {
+            append(text(member.getChatName(true)))
+            append(text(" joined the party.", NamedTextColor.YELLOW))
+        })
     }
 
     fun removeMember(
         member: PlayerData,
         broadcast: Boolean = false,
-        isKick: Boolean = false,
-        isDisband: Boolean = false
+        isKick: Boolean = false
     ) {
         if (broadcast) {
             audience.sendMessage(separator {
@@ -135,11 +180,12 @@ data class Party(
                 }
             })
         }
-
-        PartyManager.removeMember(this, member, isDisband)
+        members.remove(member.uuid)
+        member.setCurrentParty(null)
     }
 
-    private fun TextComponent.Builder.appendPlayerData(it: PlayerData) {
+    private fun TextComponent.Builder.appendPlayerData(member: PartyMember) {
+        val it = member.player
         append(text(it.getChatName(true)))
         append(Component.space())
         append(text('●', if (it.isOnline) NamedTextColor.GREEN else NamedTextColor.RED))
@@ -148,22 +194,9 @@ data class Party(
 
     fun disband() {
         if (totalMembersCount == 0) return
-        val list = members.toList()
-        list.forEach {
-            removeMember(it, isDisband = true)
+        membersList.forEach {
+            removeMember(it.player)
         }
-    }
-
-    fun restorePlayer(player: PlayerData) {
-        if (player == leader) {
-            leader = player
-        } else if (members.removeIf { it == player }) {
-            members.add(player)
-        }
-    }
-
-    fun isLeader(sender: PlayerData): Boolean {
-        return leader == sender
     }
 
     override fun equals(other: Any?): Boolean {
@@ -181,16 +214,32 @@ data class Party(
         return id.hashCode()
     }
 
+    fun acceptPendingInvite(target: PlayerData) {
+        if (!hasPendingInvite(target)) {
+            target.audience.sendMessage(separator {
+                append(text("That party has been disbanded.", NamedTextColor.RED))
+            })
+            return
+        }
+
+        setRole(target, MemberRole.MEMBER)
+        broadcastPlayerJoin(target)
+    }
+
+    fun canModifySettings(player: PlayerData): Boolean {
+        return getPlayerRole(player).canModifySettings
+    }
+
     val listMessage: Component
         get() {
             return separator {
                 append(text("Party members ($totalMembersCount)", NamedTextColor.GOLD)); append(newline())
                 append(newline())
-                append(text("Party Leader: ", NamedTextColor.YELLOW))
-                appendPlayerData(leader);
-                if (membersCount > 0) {
+                append(text("Party Leaders: ", NamedTextColor.YELLOW))
+                getMembersWithRole(MemberRole.LEADER).forEach { appendPlayerData(it) }
+                if (nonLeaderMembersCount > 0) {
                     append(newline())
-                    append(text("Party Members: ", NamedTextColor.YELLOW));
+                    append(text("Party Members: ", NamedTextColor.YELLOW))
                     nonLeaderMembers.forEach {
                         appendPlayerData(it)
                     }

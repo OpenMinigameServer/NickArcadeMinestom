@@ -78,6 +78,11 @@ class PlayerData(
         }
     }
 
+    @JsonIgnore
+    fun setCurrentParty(party: Party?) {
+        return PartyManager.setPlayerParty(this, party)
+    }
+
     var currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
 
     @JsonIgnore

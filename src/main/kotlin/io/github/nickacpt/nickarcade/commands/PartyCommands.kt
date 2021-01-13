@@ -61,7 +61,7 @@ object PartyCommands {
             command(sender, setting.requiredRank) {
                 val player = sender.getPlayerData()
                 val party = player.getCurrentParty(true) ?: return@command
-                if (!party.isLeader(player)) {
+                if (!party.canModifySettings(player)) {
                     player.audience.sendMessage(separator {
                         append(text("You are not the party leader!", NamedTextColor.RED))
                     })
@@ -160,17 +160,7 @@ object PartyCommands {
     @CommandMethod("party|p accept <target>")
     fun acceptParty(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
         val sender = senderPlayer.getPlayerData()
-        val party = target.getCurrentParty()
-
-        if (party == null || !party.hasPendingInvite(sender)) {
-            sender.audience.sendMessage(separator {
-                append(text("That party has been disbanded.", NamedTextColor.RED))
-            })
-            return@command
-        }
-
-        party.pendingInvites.remove(sender)
-        party.addMember(sender, true)
+        target.getCurrentParty()?.acceptPendingInvite(sender)
     }
 
     @CommandMethod("party|p kick <target>")
