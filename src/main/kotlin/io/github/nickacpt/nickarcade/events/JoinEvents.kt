@@ -23,7 +23,7 @@ import net.minestom.server.event.player.*
 import java.util.*
 
 fun registerJoinEvents() {
-    //registerOfflineModeOnlineIds()
+    registerOfflineModeOnlineIds()
     registerPreLoginEvent()
 
     event<PlayerLoginEvent> {
@@ -51,7 +51,9 @@ fun registerJoinEvents() {
 private fun registerOfflineModeOnlineIds() {
     MinecraftServer.getConnectionManager().setUuidProvider { _, username ->
         return@setUuidProvider runBlocking {
-            runCatching { ProfileApi.getProfileByName(username)?.uniqueId }.getOrNull() ?: UUID.randomUUID()
+            runCatching { ProfileApi.getProfileByName(username)?.uniqueId }.getOrNull() ?: UUID.nameUUIDFromBytes(
+                username.toByteArray()
+            )
         }
     }
 

@@ -65,11 +65,15 @@ data class Party(
     }
 
     private fun setRole(it: PartyMember, role: MemberRole) {
-        it.role = role
+        setRole(it.player, role)
     }
 
     private fun setRole(it: PlayerData, role: MemberRole) {
+        val shouldSetParty = members[it.uuid]?.role == MemberRole.PENDING_INVITE
         members[it.uuid]?.role = role
+        if (shouldSetParty) {
+            it.setCurrentParty(this)
+        }
     }
 
     fun invitePlayer(sender: PlayerData, target: PlayerData) {
@@ -151,7 +155,9 @@ data class Party(
         member.getCurrentParty()?.removeMember(member, broadcast = true)
 
         this.members.putIfAbsent(member.uuid, PartyMember(member, role))
-        member.setCurrentParty(this)
+        if (role >= MemberRole.MEMBER) {
+            member.setCurrentParty(this)
+        }
 
         if (broadcast && role >= MemberRole.MEMBER) {
             broadcastPlayerJoin(member)

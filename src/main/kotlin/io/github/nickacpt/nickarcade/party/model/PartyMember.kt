@@ -8,11 +8,11 @@ enum class MemberRole(
     val canInvitePlayers: Boolean = false,
     val canReceiveMessages: Boolean = true
 ) {
-    LEADER(true, true),
-    MODERATOR(false, true),
-    MEMBER,
+    NONE(canReceiveMessages = false),
     PENDING_INVITE(canReceiveMessages = false),
-    NONE(canReceiveMessages = false)
+    MEMBER,
+    MODERATOR(false, true),
+    LEADER(true, true)
 }
 
 data class PartyMember(val player: PlayerData, var role: MemberRole, val uuid: UUID = player.uuid) {
