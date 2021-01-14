@@ -1,10 +1,24 @@
 package io.github.nickacpt.nickarcade.schematics.manager
 
-import io.github.nickacpt.nickarcade.schematics.SchematicInstance
+import com.sk89q.worldedit.extent.Extent
+import com.sk89q.worldedit.extent.clipboard.Clipboard
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats
+import io.github.nickacpt.nickarcade.schematics.ReadOnlyClipboard
 import io.github.nickacpt.nickarcade.utils.pluginInstance
+import io.github.openminigameserver.worldedit.platform.chunkloader.ExtentChunkLoader
+import net.minestom.server.MinecraftServer
+import net.minestom.server.instance.Instance
+import net.minestom.server.instance.InstanceContainer
 import java.io.File
 
+val Instance.extent: Extent?
+    get() = (((this as? InstanceContainer)?.chunkLoader as? ExtentChunkLoader)?.extent)
+
+val Instance.clipboard: Clipboard?
+    get() = this.extent as? Clipboard
+
 object SchematicManager {
+
     private val dataFolder by lazy {
         File(
             pluginInstance.dataFolder,
@@ -12,28 +26,26 @@ object SchematicManager {
         ).also { it.mkdirs() }
     }
 
-    fun getSchematicInstance(name: SchematicName, yPosition: Float): SchematicInstance? {
-        val schematic = getSchematicFileByName(name).takeIf { it.exists() } ?: return null
-        return SchematicInstance(schematic, yPosition)
+    private val clipboardCache = mutableMapOf<String, Clipboard>()
+    fun getClipboard(name: SchematicName): Clipboard? = getClipboard(name.name.toLowerCase())
+
+    fun getClipboard(name: String): Clipboard? {
+        clipboardCache[name]?.let { return it }
+
+        val file = File(dataFolder, "$name.schem").takeIf { it.exists() } ?: return null
+        val format =
+            ClipboardFormats.findByFile(file) ?: throw Exception("Schematic file '$name' is not a valid schematic")
+
+        return format.getReader(file.inputStream()).read()?.also { clipboardCache[name] = it }
     }
 
-    val schematicCache = mutableMapOf<String, SchematicInstance>()
-    fun getSchematicInstance(name: String, yPosition: Float): SchematicInstance? {
-        schematicCache[name]?.let { return it }
-        val schematic = getSchematicFileByName(name).takeIf { it.exists() } ?: return null
-        return SchematicInstance(schematic, yPosition).also { schematicCache[name] = it }
+    fun getInstanceForSchematic(name: SchematicName): Instance? = getInstanceForSchematic(name.name.toLowerCase())
+
+    fun getInstanceForSchematic(name: String): Instance? {
+        val clipboard = getClipboard(name) ?: return null
+        return MinecraftServer.getInstanceManager().createInstanceContainer().apply {
+            enableAutoChunkLoad(true)
+            chunkLoader = ExtentChunkLoader(ReadOnlyClipboard(clipboard))
+        }
     }
-
-    fun getSchematicFileByName(name: SchematicName): File = getSchematicFileByName(name.name.toLowerCase())
-
-    fun getSchematicFileByName(name: String): File {
-        return File(dataFolder, "$name.schem")
-    }
-
-    fun hasSchematicByName(name: SchematicName): Boolean = hasSchematicByName(name.name.toLowerCase())
-
-    fun hasSchematicByName(name: String): Boolean {
-        return getSchematicFileByName(name).exists()
-    }
-
 }

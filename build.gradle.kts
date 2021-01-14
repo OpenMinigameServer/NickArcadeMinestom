@@ -11,7 +11,7 @@ group = "io.github.nickacpt"
 version = "1.0-SNAPSHOT"
 
 repositories {
-
+    maven("https://maven.enginehub.org/repo/")
     maven { setUrl("https://jitpack.io") }
     maven { setUrl("https://libraries.minecraft.net") }
     maven { setUrl("https://repo.spongepowered.org/maven") }
@@ -30,7 +30,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation(minestom("ea8b8ea41e"))
+    implementation(minestom("238ea649ab"))
     compileOnly("org.jetbrains:annotations:20.1.0")
 
     implementation(project(":Hypixel-API"))
@@ -57,9 +57,7 @@ dependencies {
     implementation("com.github.mworzala:adventure-platform-minestom:b61596ccef") {
         exclude(module = "Minestom")
     }
-    implementation("com.github.sejtam10.MineSchem:MineSchem-Core:f461927dd1") {
-        exclude(module = "Minestom")
-    }
+    implementation("com.github.OpenMinigameServer:MinestomWorldEdit:4df8468025")
 }
 
 

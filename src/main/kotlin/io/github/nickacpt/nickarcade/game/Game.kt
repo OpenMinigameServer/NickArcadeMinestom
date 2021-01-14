@@ -3,15 +3,15 @@ package io.github.nickacpt.nickarcade.game
 import io.github.nickacpt.nickarcade.data.player.PlayerData
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.BaseMiniGame
-import io.github.nickacpt.nickarcade.schematics.SchematicInstance
 import net.kyori.adventure.audience.Audience
+import net.minestom.server.instance.Instance
 import java.util.*
 
 data class Game(
     val id: UUID,
     val miniGame: BaseMiniGame,
     val arenaDefinition: ArenaDefinition,
-    val arena: SchematicInstance
+    val arena: Instance
 ) {
     fun addPlayer(player: PlayerData) {
         MiniGameManager.addPlayer(this, player)

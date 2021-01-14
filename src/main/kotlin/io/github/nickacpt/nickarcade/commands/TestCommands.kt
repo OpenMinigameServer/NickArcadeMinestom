@@ -111,6 +111,8 @@ object TestCommands {
     fun joinDebugGame(sender: Player, @Argument("type") type: MiniGameType) = command(sender) {
         val player = sender.getPlayerData()
 
+        sender.asAudience.sendMessage(text("Creating a game instance for you..", NamedTextColor.GRAY))
+
         val game = MiniGameManager.createGame(
             type,
             ArenaDefinition(
@@ -122,6 +124,6 @@ object TestCommands {
                 GamePosition(0f, 60f, 0f)
             )
         )
-        game.addPlayer(player)
+        game?.addPlayer(player)
     }
 }

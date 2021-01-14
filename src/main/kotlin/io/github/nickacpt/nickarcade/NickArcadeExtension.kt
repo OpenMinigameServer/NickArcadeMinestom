@@ -51,8 +51,8 @@ class NickArcadeExtension : Extension() {
             throw Exception("Unable to initialize plugin! Reason: Unable to initialize Hypixel services")
         }
 
-        SchematicManager.hasSchematicByName(SchematicName.LOBBY).takeIf { it }
-            ?: throw Exception("Unable to find lobby schematic.")
+        //Force clipboard fetch
+        SchematicManager.getClipboard(SchematicName.LOBBY)
 
         commandManager.registerCommands()
 

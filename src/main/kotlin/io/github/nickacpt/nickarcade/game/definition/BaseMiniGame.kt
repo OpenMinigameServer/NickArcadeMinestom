@@ -12,11 +12,11 @@ abstract class BaseMiniGame {
         TODO("GameEvent not implemented yet!")
     }
 
-    fun createGame(arenaDefinition: ArenaDefinition): Game {
-        val arena = SchematicManager.getSchematicInstance(arenaDefinition.schematicId, arenaDefinition.baseYPosition)
+    fun createGame(arenaDefinition: ArenaDefinition): Game? {
+        val arena = SchematicManager.getInstanceForSchematic(arenaDefinition.schematicId)
             ?: throw Exception("Unable to find arena with schematic id ${arenaDefinition.schematicId}")
 
-        val spawnPosition = GameStructureHelper.createWaitingLobby(arena)
+        val spawnPosition = GameStructureHelper.createWaitingLobby(arena) ?: return null
         return Game(UUID.randomUUID(), this, arenaDefinition.copy(spawnPosition = spawnPosition), arena)
     }
 }

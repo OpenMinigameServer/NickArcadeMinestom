@@ -21,7 +21,7 @@ object MiniGameManager {
         miniGames[miniGame.type] = miniGame
     }
 
-    fun createGame(type: MiniGameType, definition: ArenaDefinition): Game {
+    fun createGame(type: MiniGameType, definition: ArenaDefinition): Game? {
         val miniGame = miniGames[type] ?: throw Exception("MiniGame ${type.friendlyName} was not registered.")
 
         return miniGame.createGame(definition)
@@ -64,7 +64,7 @@ object MiniGameManager {
         game: Game
     ) {
         val minestomPlayer = player.player
-        minestomPlayer?.setInstance(game.arena.instance, game.arenaDefinition.spawnPosition.toMinestom())
+        minestomPlayer?.setInstance(game.arena, game.arenaDefinition.spawnPosition.toMinestom())
         minestomPlayer?.respawn()
     }
 

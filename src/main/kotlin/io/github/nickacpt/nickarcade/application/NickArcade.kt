@@ -16,6 +16,7 @@ fun main(args: Array<String>) {
     )
 
     val server = MinecraftServer.init()
+    MinecraftServer.setShouldProcessNettyErrors(true)
     MojangAuth.init()
     OptifineSupport.enable()
     PlacementRules.init()

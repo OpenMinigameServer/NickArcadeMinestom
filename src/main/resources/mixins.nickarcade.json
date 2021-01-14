@@ -6,7 +6,6 @@
   "compatibilityLevel": "JAVA_11",
   "mixins": [
     "BlockPlacementListenerMixin",
-    "PlayerMixin",
-    "SpongeSchematicMixin"
+    "MinestomPermissionsProviderMixin"
   ]
 }

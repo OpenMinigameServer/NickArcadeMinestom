@@ -62,6 +62,8 @@ fun setupPermissions(player: PlayerData, minestomPlayer: Player) {
         if (player.hasAtLeastRank(it, true)) {
             minestomPlayer.addPermission(Permission(it.name.toLowerCase()))
         }
+        if (player.hasAtLeastRank(HypixelPackageRank.ADMIN))
+            minestomPlayer.addPermission(Permission("worldedit.*"))
     }
 }
 

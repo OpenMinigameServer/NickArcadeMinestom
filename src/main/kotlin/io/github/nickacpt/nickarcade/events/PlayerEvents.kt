@@ -2,8 +2,10 @@ package io.github.nickacpt.nickarcade.events
 
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicManager
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicName
+import io.github.nickacpt.nickarcade.schematics.manager.clipboard
 import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.event
+import io.github.openminigameserver.worldedit.platform.adapters.MinestomAdapter
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.data.DataImpl
@@ -12,11 +14,10 @@ import net.minestom.server.event.player.PlayerBlockBreakEvent
 import net.minestom.server.event.player.PlayerBlockPlaceEvent
 import net.minestom.server.event.player.PlayerLoginEvent
 import net.minestom.server.item.Material
-import net.minestom.server.utils.Position
 
 
 val lobbyInstance by lazy {
-    SchematicManager.getSchematicInstance(SchematicName.LOBBY, 54f)?.instance
+    SchematicManager.getInstanceForSchematic(SchematicName.LOBBY)
         ?: throw Exception("Unable to find lobby schematic.")
 }
 
@@ -35,7 +36,8 @@ fun registerPlayerEvents() {
         player.gameMode = GameMode.CREATIVE
 
         setSpawningInstance(lobbyInstance)
-        player.respawnPoint = Position(0.5f, 55.0f, 0.5f)
+
+        player.respawnPoint = MinestomAdapter.toPosition(lobbyInstance.clipboard!!.origin.toVector3())
     }
 
     event<PlayerBlockPlaceEvent>(forceBlocking = true, ignoreCancelled = true) {
