@@ -32,7 +32,7 @@ object PlayerUuidProviderManager {
         }
     }
 
-    private suspend fun getPlayerUuidSuspend(player: Player): UUID {
+    suspend fun getPlayerUuidSuspend(player: Player): UUID {
         var id: UUID = UUID.randomUUID()
         providers.forEach { provider ->
             provider.getPlayerUuid(player)?.let {

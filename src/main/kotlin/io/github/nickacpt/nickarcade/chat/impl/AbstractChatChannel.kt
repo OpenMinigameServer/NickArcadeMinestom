@@ -6,6 +6,7 @@ import io.github.nickacpt.nickarcade.chat.ChatEmote
 import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.ArcadeSender
+import io.github.nickacpt.nickarcade.display.PlayerUuidProviderManager
 import io.github.nickacpt.nickarcade.utils.cooldown
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.identity.Identity
@@ -74,10 +75,12 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         }
         val recipients = getRecipients(sender, message)
 
-        //TODO: Messages leak nicked Players
         val hoverComponent = (sender as? ArcadePlayer)?.computeHoverEventComponent(showActualValues)
+        val senderId =
+            (sender as? ArcadePlayer)?.let { PlayerUuidProviderManager.getPlayerUuidSuspend(sender.player!!) }
+                ?: sender.uuid
         recipients.sendMessage(
-            Identity.identity(sender.uuid),
+            Identity.identity(senderId),
             formatMessage(
                 sender,
                 text(sender.getChatName(showActualValues, false)),
