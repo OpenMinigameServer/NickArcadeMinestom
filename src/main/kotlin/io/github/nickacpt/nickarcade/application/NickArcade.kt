@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
 
     server.start(
         "0.0.0.0", 25566
-    ) { connection, responseData ->
+    ) { _, responseData ->
         responseData.apply {
             responseData.setDescription("NickArcade")
         }

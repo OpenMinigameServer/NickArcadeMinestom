@@ -4,7 +4,8 @@ import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
 import io.github.nickacpt.nickarcade.chat.ChatEmote
 import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.utils.cooldown
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.identity.Identity
@@ -17,14 +18,21 @@ import kotlin.time.Duration
 abstract class AbstractChatChannel(val type: ChatChannelType) {
     open val showActualValues: Boolean = type.useActualName
 
-    open suspend fun checkSender(sender: PlayerData, origin: ChatMessageOrigin): Boolean = true
+    open suspend fun checkSender(sender: ArcadeSender, origin: ChatMessageOrigin): Boolean = true
 
-    abstract suspend fun getRecipients(sender: PlayerData, message: String): Audience
+    abstract suspend fun getRecipients(sender: ArcadeSender, message: String): Audience
 
-    open suspend fun getPlayerRateLimit(sender: PlayerData): Duration = Duration.ZERO
+    open suspend fun getSenderRateLimit(sender: ArcadeSender): Duration {
+        return if (sender is ArcadePlayer) {
+            getPlayerRateLimit(sender)
+        } else
+            Duration.ZERO
+    }
+
+    open suspend fun getPlayerRateLimit(sender: ArcadePlayer): Duration = Duration.ZERO
 
     open suspend fun formatMessage(
-        sender: PlayerData,
+        sender: ArcadeSender,
         senderName: ComponentLike,
         message: ComponentLike
     ): ComponentLike {
@@ -44,13 +52,13 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         }
     }
 
-    suspend fun sendMessageInternal(sender: PlayerData, message: String, origin: ChatMessageOrigin) {
-        var rateLimit = getPlayerRateLimit(sender)
-        val player = sender.player
+    suspend fun sendMessageInternal(sender: ArcadeSender, message: String, origin: ChatMessageOrigin) {
+        val rateLimit = getSenderRateLimit(sender)
 
         if (!checkSender(sender, origin)) return
 
-        if (player != null && rateLimit > Duration.ZERO && !player.cooldown("chat-$type", rateLimit)) {
+        val isInCooldown = sender is ArcadePlayer && sender.player?.cooldown("chat-$type", rateLimit) == true
+        if (rateLimit > Duration.ZERO && !isInCooldown) {
             sender.audience.sendMessage(
                 text {
                     it.append(
@@ -66,17 +74,19 @@ abstract class AbstractChatChannel(val type: ChatChannelType) {
         }
         val recipients = getRecipients(sender, message)
 
+        //TODO: Messages leak nicked Players
+        val hoverComponent = (sender as? ArcadePlayer)?.computeHoverEventComponent(showActualValues)
         recipients.sendMessage(
             Identity.identity(sender.uuid),
             formatMessage(
                 sender,
-                text(sender.getChatName(showActualValues)),
+                text(sender.getChatName(showActualValues, false)),
                 processChatMessage(sender, text(message))
-            ).asComponent().hoverEvent(sender.computeHoverEventComponent(showActualValues))
+            ).asComponent().hoverEvent(hoverComponent)
         )
     }
 
-    open fun processChatMessage(sender: PlayerData, message: Component): Component {
+    open fun processChatMessage(sender: ArcadeSender, message: Component): Component {
         var modifiedMessage = message
         if (sender.hasAtLeastRank(HypixelPackageRank.SUPERSTAR, showActualValues)) {
             modifiedMessage = processEmotes(modifiedMessage)

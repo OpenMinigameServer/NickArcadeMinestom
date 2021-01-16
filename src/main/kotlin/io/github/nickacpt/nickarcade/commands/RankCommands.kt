@@ -5,10 +5,10 @@ import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
-import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
@@ -18,7 +18,6 @@ import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor.GREEN
-import net.minestom.server.command.CommandSender
 import org.apache.commons.lang3.StringUtils
 import org.checkerframework.checker.nullness.qual.NonNull
 import org.litote.kmongo.and
@@ -33,10 +32,10 @@ object RankCommands {
     @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("ranks|rank get <player>")
     fun getPlayerInfo(
-        sender: CommandSender,
-        @Argument("player") player: PlayerData
+        sender: ArcadeSender,
+        @Argument("player") player: ArcadePlayer
     ) = command(sender, HypixelPackageRank.ADMIN) {
-        sender.asAudience.sendMessage {
+        sender.audience.sendMessage {
             text {
                 it.append(text(player.getChatName(true)))
                 it.append(text(" is player's display on this server.", GREEN))
@@ -48,18 +47,18 @@ object RankCommands {
     @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("ranks|rank list <rank>")
     fun listPlayersRanked(
-        sender: CommandSender,
+        sender: ArcadeSender,
         @Argument("rank") rank: HypixelPackageRank
     ) = command(sender, HypixelPackageRank.ADMIN) {
         val players =
             PlayerDataManager.playerDataCollection.find(
                 and(
-                    (PlayerData::overrides / PlayerOverrides::rankOverride).exists(),
-                    PlayerData::overrides / PlayerOverrides::rankOverride eq rank
+                    (ArcadePlayer::overrides / PlayerOverrides::rankOverride).exists(),
+                    ArcadePlayer::overrides / PlayerOverrides::rankOverride eq rank
                 )
             ).toList()
 
-        sender.asAudience.sendMessage {
+        sender.audience.sendMessage {
             text {
                 it.append(text("Found ${players.size} player(s) with rank $rank:", GREEN))
                 players.forEach { p ->
@@ -71,11 +70,11 @@ object RankCommands {
     }
 
     private fun sendSuccessMessage(
-        sender: CommandSender,
+        sender: ArcadeSender,
         message: @NonNull TextComponent,
-        playerData: PlayerData
+        playerData: ArcadePlayer
     ) {
-        sender.asAudience.sendMessage(
+        sender.audience.sendMessage(
             text {
                 it.append(
                     message
@@ -87,7 +86,7 @@ object RankCommands {
         )
     }
 
-    private fun computeDisplayNameMessage(playerData: PlayerData) = text(
+    private fun computeDisplayNameMessage(playerData: ArcadePlayer) = text(
         "Their display name is now ",
         GREEN
     ).append(text(playerData.getChatName()))
@@ -116,7 +115,7 @@ object RankCommands {
         if (prop.returnType.isMarkedNullable)
             helper.manager.command(
                 commandBuilder.literal("reset$propChanged", "remove$propChanged")
-                    .argument(PlayerData::class.java, "player") {
+                    .argument(ArcadePlayer::class.java, "player") {
                         it.asRequired()
                     }
                     .permission(HypixelPackageRank.ADMIN)
@@ -128,10 +127,10 @@ object RankCommands {
     private fun <T> handleValueSet(
         prop: KMutableProperty1<PlayerOverrides, T?>,
         propChanged: String,
-    ): (commandContext: @NonNull CommandContext<CommandSender>) -> Unit =
+    ): (commandContext: @NonNull CommandContext<ArcadeSender>) -> Unit =
         {
             command(it.sender, HypixelPackageRank.ADMIN) {
-                val player = it.get<PlayerData>("player")
+                val player = it.get<ArcadePlayer>("player")
                 val valueFinal = it.getOrDefault<T>("value", null)
                 prop.set(player.overrides, valueFinal)
                 val changed = StringUtils.join(
@@ -157,13 +156,13 @@ object RankCommands {
             }
         }
 
-    private fun <T> Command.Builder<CommandSender>.createSetValueHandler(
+    private fun <T> Command.Builder<ArcadeSender>.createSetValueHandler(
         propChanged: String,
         prop: KMutableProperty1<PlayerOverrides, T?>
-    ): @NonNull Command.Builder<CommandSender> {
+    ): @NonNull Command.Builder<ArcadeSender> {
         val javaType: Class<Any> = prop.returnType.jvmErasure.java as Class<Any>
         return this.literal("set$propChanged")
-            .argument(PlayerData::class.java, "player") {
+            .argument(ArcadePlayer::class.java, "player") {
                 it.asRequired()
             }
             .permission(HypixelPackageRank.ADMIN)

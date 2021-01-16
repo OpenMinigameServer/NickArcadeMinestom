@@ -37,6 +37,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 
+    implementation("com.github.OpenMinigameServer:cloud-minestom:8914014169")
+
     implementation("cloud.commandframework:cloud-annotations:$cloudVersion") {
         exclude(module = "geantyref")
     }

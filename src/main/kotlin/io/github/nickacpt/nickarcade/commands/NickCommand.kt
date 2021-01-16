@@ -4,8 +4,9 @@ import cloud.commandframework.annotations.CommandMethod
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.utis.profile.Profile
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.display.NickContext
 import io.github.nickacpt.nickarcade.events.toPlayerProfile
 import io.github.nickacpt.nickarcade.events.validNamePattern
@@ -61,7 +62,7 @@ object NickCommand {
         )
     }
 
-    private suspend fun showPageOne(player: Player, context: NickContext = NickContext()) {
+    private suspend fun showPageOne(player: ArcadePlayer, context: NickContext = NickContext()) {
         if (context.acceptedTerms == true) {
             showPageTwo(player, context)
             return
@@ -89,11 +90,11 @@ object NickCommand {
             )
         }
 
-        player.openBook(page)
+        player.player?.openBook(page)
     }
 
-    private suspend fun showPageTwo(player: Player, context: NickContext = NickContext()) {
-        val isYoutuber = player.getPlayerData().hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
+    private suspend fun showPageTwo(player: ArcadePlayer, context: NickContext = NickContext()) {
+        val isYoutuber = player.hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
 
         val page = text { page ->
             page.append(text("Let's get you set up with your nickname!"))
@@ -135,12 +136,11 @@ object NickCommand {
             }
         }
 
-        player.openBook(page)
+        player.player?.openBook(page)
     }
 
-    private suspend fun showPageThree(player: Player, context: NickContext = NickContext()) {
-        val data = player.getPlayerData()
-        val isYoutuber = data.hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
+    private suspend fun showPageThree(player: ArcadePlayer, context: NickContext = NickContext()) {
+        val isYoutuber = player.hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
         val page = text { page ->
             page.append(text("Awesome! Now, which ")).append(text("SKIN", Style.style(TextDecoration.BOLD)))
                 .append(text(" would you like to have while nicked?")).append(newline())
@@ -156,7 +156,8 @@ object NickCommand {
                 ).clickEvent {
                     setContextSkinAndMoveToPageFour(
                         context,
-                        player.getPlayerProfile()!!.copy(name = getRandomProfileName(), uuid = UUID.randomUUID())
+                        player.player!!.getPlayerProfile()!!
+                            .copy(name = getRandomProfileName(), uuid = UUID.randomUUID())
                     )
                 }.append(newline())
             )
@@ -180,7 +181,7 @@ object NickCommand {
                     text("➤ Use a Minecraft user skin").hoverEvent(
                         text("Click here to use pick a skin from a name")
                     ).clickEvent {
-                        player.asAudience.sendMessage(
+                        player.audience.sendMessage(
                             text(
                                 "Please type a name of the skin that you want to use in chat.",
                                 GREEN
@@ -198,7 +199,7 @@ object NickCommand {
                                         )
                                     }
                                 } else {
-                                    player.asAudience.sendMessage(
+                                    player.audience.sendMessage(
                                         text(
                                             "There is no player with that name!",
                                             RED
@@ -212,7 +213,7 @@ object NickCommand {
                 )
             }
 
-            val profile = data.displayOverrides.displayProfile
+            val profile = player.displayOverrides.displayProfile
             if (profile != null) {
                 page.append(
                     text("➤ Reuse current /nick skin ('${profile.name}')").hoverEvent(
@@ -237,13 +238,13 @@ object NickCommand {
             )
         }
 
-        player.openBook(page)
+        player.player?.openBook(page)
     }
 
     private fun getRandomProfileName() = ProfilesManager.profiles.random().name
 
     private suspend fun showPageFour(player: Player, context: NickContext = NickContext()) {
-        val isYoutuber = player.getPlayerData().hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
+        val isYoutuber = player.getArcadeSender().hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
         val page = text { page ->
             page.append(text("Alright, now you'll need to choose the "))
                 .append(text("NAME", Style.style(TextDecoration.BOLD)))
@@ -315,10 +316,9 @@ object NickCommand {
 
     @RequiredRank(HypixelPackageRank.SUPERSTAR)
     @CommandMethod("nick")
-    fun nickCommand(sender: Player) = command(sender) {
-        val player = sender.getPlayerData()
+    fun nickCommand(sender: ArcadePlayer) = command(sender) {
         val context = NickContext()
-        if (player.hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)) {
+        if (sender.hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)) {
             context.acceptedTerms = true
         }
         showPageOne(sender, context)
@@ -326,9 +326,8 @@ object NickCommand {
 
     @RequiredRank(HypixelPackageRank.SUPERSTAR)
     @CommandMethod("unnick")
-    fun unnickCommand(sender: Player) = command(sender) {
-        val player = sender.getPlayerData()
-        sender.applyNickContext(null)
+    fun unnickCommand(sender: ArcadePlayer) = command(sender) {
+        sender.player?.applyNickContext(null)
     }
 
 }
@@ -338,11 +337,10 @@ private fun Profile.toDumpedProfile(): DumpedProfile {
 }
 
 private suspend fun Player.applyNickContext(context: NickContext?) {
-    val player = getPlayerData()
+    val player = getArcadeSender()
     val minestomPlayer = player.player ?: return
     if (context == null) {
-        player.displayOverrides.displayProfile = null
-        player.displayOverrides.overrides = null
+        player.displayOverrides.resetDisguise()
         minestomPlayer.setDisplayProfile(null, true)
         player.audience.sendMessage(text("Your nick has been reset!", GREEN))
         return
@@ -350,8 +348,15 @@ private suspend fun Player.applyNickContext(context: NickContext?) {
 
     val profile = context.skin!!.toDumpedProfile()
 
+    player.displayOverrides.isPartyDisguise = false
     player.displayOverrides.displayProfile = profile
-    player.displayOverrides.overrides = PlayerOverrides(context.rank, networkLevel = Random.nextInt(1, 50).toLong())
+
+    player.displayOverrides.overrides =
+        PlayerOverrides(
+            context.rank,
+            networkLevel = Random.nextInt(1, 50).toLong(),
+            isLegacyPlayer = false
+        )
     minestomPlayer.setDisplayProfile(profile, true)
     player.audience.sendMessage(text("You are now nicked as ${profile.name}!", GREEN))
 }

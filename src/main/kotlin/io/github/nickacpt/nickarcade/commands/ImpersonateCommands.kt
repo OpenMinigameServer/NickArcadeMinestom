@@ -6,22 +6,20 @@ import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationData
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
-import io.github.nickacpt.nickarcade.utils.asAudience
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
-import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
-import net.minestom.server.entity.Player
 
 object ImpersonateCommands {
     private val profileService = ProfileApi.getProfileService()
 
     @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("impersonate <player>")
-    fun impersonatePlayer(sender: Player, @Argument("player") nameOrUUID: String) =
+    fun impersonatePlayer(sender: ArcadePlayer, @Argument("player") nameOrUUID: String) =
         command(sender, HypixelPackageRank.ADMIN) {
-            val senderAudience = sender.asAudience
+            val senderAudience = sender.audience
             val result = profileService.findById(nameOrUUID)
             if (result?.isError == true) {
                 senderAudience.sendMessage(text("Unable to find a player with that name/id", NamedTextColor.RED))
@@ -32,18 +30,18 @@ object ImpersonateCommands {
             val name = result?.name
             if (uniqueId != null && name != null) {
                 performPlayerReLogin(sender) {
-                    ImpersonationManager.impersonate(sender.uniqueId, ImpersonationData(name, uniqueId))
+                    ImpersonationManager.impersonate(sender.uuid, ImpersonationData(name, uniqueId))
                     senderAudience.sendMessage(text("You are now impersonating user $name.", NamedTextColor.GREEN))
                 }
             }
         }
 
     @CommandMethod("removeimpersonation")
-    fun removeImpersonation(sender: Player) =
+    fun removeImpersonation(sender: ArcadePlayer) =
         command(sender) {
-            val senderAudience = sender.asAudience
+            val senderAudience = sender.audience
             performPlayerReLogin(sender) {
-                ImpersonationManager.removeImpersonation(sender.uniqueId)
+                ImpersonationManager.removeImpersonation(sender.uuid)
                 senderAudience.sendMessage(
                     text(
                         "You are no longer impersonating a user.",
@@ -54,13 +52,13 @@ object ImpersonateCommands {
         }
 
 
-    private suspend fun performPlayerReLogin(sender: Player, code: suspend () -> Unit) {
+    private suspend fun performPlayerReLogin(sender: ArcadePlayer, code: suspend () -> Unit) {
         logoutPlayer(sender)
         code()
     }
 
-    private fun logoutPlayer(sender: Player) {
-        sender.kick("Please reconnect to finish applying impersonation!")
+    private fun logoutPlayer(sender: ArcadePlayer) {
+        sender.player?.kick("Please reconnect to finish applying impersonation!")
     }
 
 }

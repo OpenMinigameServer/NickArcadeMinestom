@@ -4,9 +4,9 @@ import cloud.commandframework.arguments.parser.ArgumentParseResult
 import cloud.commandframework.arguments.parser.ArgumentParser
 import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.utils.div
 import io.github.nickacpt.nickarcade.utils.interop.getOnlinePlayers
 import io.github.nickacpt.nickarcade.utils.interop.getPlayer
@@ -16,15 +16,15 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.include
 import java.util.*
 
-class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
-    override fun parse(commandContext: CommandContext<C>, queue: Queue<String>): ArgumentParseResult<PlayerData> {
+class PlayerDataParser<C> : ArgumentParser<C, ArcadePlayer> {
+    override fun parse(commandContext: CommandContext<C>, queue: Queue<String>): ArgumentParseResult<ArcadePlayer> {
         return runBlocking {
             val argument: String? = queue.peek()
             if (argument != null) {
                 queue.remove()
 
                 //Try a name
-                var data = getPlayer(argument)?.getPlayerData()
+                var data = getPlayer(argument)?.getArcadeSender()
                 if (data != null && data.displayOverrides.displayProfile != null) {
                     //Do not expose nicked players
                     data = null
@@ -33,12 +33,12 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
                 //Try a UUID
                 if (data == null) {
                     data = kotlin.runCatching { getPlayer(UUID.fromString(argument)) }.getOrNull()
-                        ?.getPlayerData()
+                        ?.getArcadeSender()
                 }
 
                 //Try finding from the displayName of a PlayerData
                 if (data == null) {
-                    val displayName = PlayerData::rawHypixelData / HypixelPlayer::displayName
+                    val displayName = ArcadePlayer::rawHypixelData / HypixelPlayer::displayName
                     val foundPlayer = PlayerDataManager.playerDataCollection.findOne(displayName eq argument)
                     if (foundPlayer != null) {
                         data = foundPlayer
@@ -63,7 +63,7 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
                         )
                 )
             }
-            return@runBlocking ArgumentParseResult.failure<PlayerData>(
+            return@runBlocking ArgumentParseResult.failure<ArcadePlayer>(
                 Exception(
                     "Unable to find player named '$argument'"
                 )
@@ -73,15 +73,15 @@ class PlayerDataParser<C> : ArgumentParser<C, PlayerData> {
 
     override fun suggestions(commandContext: CommandContext<C>, input: String): MutableList<String> {
         return runBlocking {
-            val displayName = PlayerData::rawHypixelData / HypixelPlayer::displayName
+            val displayName = ArcadePlayer::rawHypixelData / HypixelPlayer::displayName
             val allElements =
                 PlayerDataManager.playerDataCollection.find()
-                    .projection(include(PlayerData::uuid, displayName))
+                    .projection(include(ArcadePlayer::uuid, displayName))
                     .toList()
 
             return@runBlocking (allElements.map {
                 it.displayName
-            } + sync { getOnlinePlayers().map { it.getPlayerData() } }.map { it.actualDisplayName }).distinct()
+            } + sync { getOnlinePlayers().map { it.getArcadeSender() } }.map { it.actualDisplayName }).distinct()
                 .toMutableList()
         }
     }

@@ -26,19 +26,20 @@ import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.event.HoverEventSource
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.MinecraftServer
+import net.minestom.server.command.CommandSender
 import net.minestom.server.entity.Player
 import java.util.*
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator::class, property = "_id")
-class PlayerData(
-    @JsonProperty("_id") val uuid: UUID,
+class ArcadePlayer(
+    @JsonProperty("_id") uuid: UUID,
     @JsonIgnore var hypixelData: HypixelPlayer?,
     val overrides: PlayerOverrides = PlayerOverrides(),
-    val rawHypixelData: JsonNode? = hypixelData?.rawJsonNode,
+    var rawHypixelData: JsonNode? = hypixelData?.rawJsonNode,
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
     val displayOverrides: DisplayOverrides = DisplayOverrides(),
-) {
+) : ArcadeSender(uuid) {
     @JsonIgnore
     val extraData = mutableMapOf<String, Any?>()
 
@@ -58,7 +59,9 @@ class PlayerData(
 
     init {
         if (rawHypixelData != null) {
-            hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData)
+            hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData!!)
+        } else if (hypixelData != null) {
+            rawHypixelData = HypixelApi.objectMapper.valueToTree(hypixelData)
         }
     }
 
@@ -83,13 +86,13 @@ class PlayerData(
         return PartyManager.setPlayerParty(this, party)
     }
 
-    var currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
+    override var currentChannel: ChatChannelType = currentChannel ?: ChatChannelType.ALL
 
     @JsonIgnore
-    var forwardTarget: PlayerData? = null
+    var forwardTarget: ArcadePlayer? = null
 
     @get:JsonIgnore
-    val audience: Audience
+    override val audience: Audience
         get() = forwardTarget?.asRedirectAudience(actualDisplayName) ?: if (uuid == UUID(
                 0,
                 0
@@ -135,8 +138,11 @@ class PlayerData(
     private fun effectivePlayerOverrides() = displayOverrides.overrides ?: overrides
 
     @get:JsonIgnore
-    val displayName: String
+    override val displayName: String
         get() = displayOverrides.displayProfile?.name ?: actualDisplayName
+
+    override val commandSender: CommandSender
+        get() = player!!
 
     @get:JsonIgnore
     val actualDisplayName: String
@@ -155,7 +161,13 @@ class PlayerData(
         get() = effectivePlayerOverrides().networkLevel ?: hypixelData?.networkLevel ?: 1
 
     @JsonIgnore
-    fun getChatName(actualData: Boolean = false, colourPrefixOnly: Boolean = false): String {
+    fun getChatName(): String = getChatName(false)
+
+    @JsonIgnore
+    fun getChatName(actualData: Boolean): String = getChatName(actualData, false)
+
+    @JsonIgnore
+    override fun getChatName(actualData: Boolean, colourPrefixOnly: Boolean): String {
         var name = displayName
         var prefix = effectivePrefix
         if (actualData) {
@@ -170,7 +182,7 @@ class PlayerData(
         return "$prefix$name"
     }
 
-    fun hasAtLeastRank(rank: HypixelPackageRank, actualData: Boolean = false): Boolean {
+    override fun hasAtLeastRank(rank: HypixelPackageRank, actualData: Boolean): Boolean {
         return actualData && hasAtLeastRank(rank) || hasAtLeastDisplayRank(rank)
     }
 
@@ -185,7 +197,7 @@ class PlayerData(
     fun computeHoverEventComponent(actualData: Boolean = false): HoverEventSource<*> {
         return text {
             it.run {
-                append(text(getChatName(actualData)))
+                append(text(getChatName(actualData, false)))
                 append(newline())
                 append(text("Hypixel Level: ", NamedTextColor.GRAY))
                 append(text(if (actualData) hypixelData?.networkLevel ?: 1 else networkLevel, NamedTextColor.GOLD))
@@ -205,7 +217,7 @@ class PlayerData(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as PlayerData
+        other as ArcadePlayer
 
         if (uuid != other.uuid) return false
 

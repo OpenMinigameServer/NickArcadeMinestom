@@ -3,7 +3,6 @@ package io.github.nickacpt.nickarcade.chat
 import cloud.commandframework.arguments.standard.StringArgument
 import cloud.commandframework.kotlin.extension.buildAndRegister
 import io.github.nickacpt.nickarcade.chat.impl.*
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 
@@ -36,7 +35,7 @@ object ChatChannelsManager {
                 handler {
                     command(it.sender, type.requiredRank) {
                         channel.sendMessageInternal(
-                            it.sender.getPlayerData(),
+                            it.sender,
                             it["text"],
                             ChatMessageOrigin.SHORTCUT_COMMAND
                         )

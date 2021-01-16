@@ -1,9 +1,9 @@
 package io.github.nickacpt.nickarcade.utils
 
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.ExtraDataTag
-import io.github.nickacpt.nickarcade.data.player.PlayerData
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor.RED
 import net.minestom.server.entity.Player
@@ -23,13 +23,13 @@ object ChatInput {
         onSuccess: Player.(String) -> Unit,
         isValid: Player.(String) -> Boolean = { true }
     ) {
-        val playerData = player.getPlayerData()
+        val playerData = player.getArcadeSender()
 
         playerData[inputWaitingTag] = InputWaiting(playerData.currentChannel, onSuccess, isValid)
         playerData.currentChannel = ChatChannelType.USER_INPUT
     }
 
-    fun performInput(sender: PlayerData, content: String) {
+    fun performInput(sender: ArcadePlayer, content: String) {
         val input = sender[inputWaitingTag] ?: return
         val player = sender.player ?: return
         if (!input.isValid(player, content)) {

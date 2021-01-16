@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.display
 
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import kotlinx.coroutines.runBlocking
 import net.minestom.server.entity.Player
 import java.util.*
@@ -12,7 +12,7 @@ object PlayerUuidProviderManager {
 
     init {
         addProvider {
-            val playerData = getPlayerData()
+            val playerData = getArcadeSender()
             val displayOverrides = playerData.displayOverrides
             if (!displayOverrides.isProfileOverridden) return@addProvider null
             val displayProfile = displayOverrides.displayProfile

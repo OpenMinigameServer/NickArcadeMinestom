@@ -6,9 +6,8 @@ import cloud.commandframework.arguments.CommandArgument
 import cloud.commandframework.kotlin.MutableCommandBuilder
 import cloud.commandframework.kotlin.extension.buildAndRegister
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
-import io.github.nickacpt.nickarcade.data.player.PlayerData
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
-import io.github.nickacpt.nickarcade.party.model.Party
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.party.model.PartySetting
 import io.github.nickacpt.nickarcade.party.model.PartySettings
 import io.github.nickacpt.nickarcade.utils.command
@@ -17,8 +16,6 @@ import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.format.NamedTextColor
-import net.minestom.server.command.CommandSender
-import net.minestom.server.entity.Player
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
@@ -28,7 +25,7 @@ import kotlin.reflect.jvm.jvmErasure
 
 object PartyCommands {
 
-    fun registerPartySettings(manager: NickArcadeCommandManager<CommandSender>) {
+    fun registerPartySettings(manager: NickArcadeCommandManager<ArcadeSender>) {
         val partySettingsKClass = PartySettings::class
         val properties = partySettingsKClass.memberProperties.filter { it.hasAnnotation<PartySetting>() }
         properties.forEach { prop ->
@@ -43,11 +40,11 @@ object PartyCommands {
         }
     }
 
-    private fun MutableCommandBuilder<CommandSender>.createPartyPropSubcommand(
+    private fun MutableCommandBuilder<ArcadeSender>.createPartyPropSubcommand(
         prop: KProperty1<PartySettings, *>,
         setting: PartySetting
     ) {
-        senderType(Player::class.java)
+        senderType(ArcadePlayer::class.java)
         val isToggle = prop.returnType.jvmErasure == Boolean::class
         if (!isToggle) {
             val returnType = prop.returnType.jvmErasure.java
@@ -57,12 +54,11 @@ object PartyCommands {
         handler {
             val partyProp = prop as KMutableProperty1<PartySettings, Any?>
 
-            val sender = it.sender as? Player ?: return@handler
+            val sender = it.sender as? ArcadePlayer ?: return@handler
             command(sender, setting.requiredRank) {
-                val player = sender.getPlayerData()
-                val party = player.getCurrentParty(true) ?: return@command
-                if (!party.canModifySettings(player)) {
-                    player.audience.sendMessage(separator {
+                val party = sender.getCurrentParty(true) ?: return@command
+                if (!party.canModifySettings(sender)) {
+                    sender.audience.sendMessage(separator {
                         append(text("You are not the party leader!", NamedTextColor.RED))
                     })
                     return@command
@@ -70,74 +66,58 @@ object PartyCommands {
 
                 if (isToggle) {
                     val newValue = (partyProp.get(party.settings) as Boolean).not()
-                    notifyToggleChanged(party, player, setting, newValue)
-                    partyProp.set(party.settings, newValue)
+                    party.settings.setPropertyAndNotify(sender, partyProp, newValue)
                 } else {
-                    partyProp.set(party.settings, it["value"])
+                    party.settings.setPropertyAndNotify(sender, partyProp, it["value"])
                 }
             }
         }
     }
 
-    private fun notifyToggleChanged(party: Party, player: PlayerData, setting: PartySetting, newValue: Boolean) {
-        val toggleMessage = if (newValue) "enabled" else "disabled"
-        val colour = if (newValue) NamedTextColor.GREEN else NamedTextColor.RED
-
-        party.audience.sendMessage(
-            separator {
-                append(text(player.getChatName(true)))
-                append(text(" has $toggleMessage ${setting.description}", colour))
-            }
-        )
-    }
-
     @CommandMethod("party|p <target>")
-    fun invitePlayerShort(senderPlayer: Player, @Argument("target") target: PlayerData) =
+    fun invitePlayerShort(senderPlayer: ArcadePlayer, @Argument("target") target: ArcadePlayer) =
         invitePlayer(senderPlayer, target)
 
     @CommandMethod("pl")
-    fun listPartyShort(senderPlayer: Player) =
+    fun listPartyShort(senderPlayer: ArcadePlayer) =
         listParty(senderPlayer)
 
     @CommandMethod("pl <target>")
-    fun listPartyOtherShort(senderPlayer: Player, @Argument("target") target: PlayerData) =
+    fun listPartyOtherShort(senderPlayer: ArcadePlayer, @Argument("target") target: ArcadePlayer) =
         listPartyOther(senderPlayer, target)
 
     @CommandMethod("party|p invite <player>")
     fun invitePlayer(
-        senderPlayer: Player,
+        senderPlayer: ArcadePlayer,
         @Argument("player")
-        target: PlayerData
+        target: ArcadePlayer
     ) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
-        val party = sender.getOrCreateParty()
+        val party = senderPlayer.getOrCreateParty()
 
-        if (sender == target) {
-            sender.audience.sendMessage(separator {
+        if (senderPlayer == target) {
+            senderPlayer.audience.sendMessage(separator {
                 append(text("You cannot party yourself!", NamedTextColor.RED))
             })
             return@command
         }
-        party.invitePlayer(sender, target)
+        party.invitePlayer(senderPlayer, target)
     }
 
     @CommandMethod("party|p leave")
     fun partyLeavePlayer(
-        senderPlayer: Player
+        senderPlayer: ArcadePlayer
     ) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
-        val party = sender.getCurrentParty(true) ?: return@command
+        val party = senderPlayer.getCurrentParty(true) ?: return@command
 
-        party.removeMember(sender, true)
+        party.removeMember(senderPlayer, true)
     }
 
     @CommandMethod("party|p disband")
-    fun disbandParty(senderPlayer: Player) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
-        val party = sender.getCurrentParty() ?: return@command
+    fun disbandParty(senderPlayer: ArcadePlayer) = command(senderPlayer) {
+        val party = senderPlayer.getCurrentParty() ?: return@command
 
         party.audience.sendMessage(separator {
-            append(text(sender.getChatName(true)))
+            append(text(senderPlayer.getChatName(actualData = true, colourPrefixOnly = false)))
             append(text(" has disbanded the party!", NamedTextColor.YELLOW))
         })
 
@@ -145,59 +125,54 @@ object PartyCommands {
     }
 
     @CommandMethod("party|p hijack <target>")
-    fun hijackParty(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
+    fun hijackParty(senderPlayer: ArcadePlayer, @Argument("target") target: ArcadePlayer) = command(senderPlayer) {
         val party = target.getCurrentParty() ?: return@command
 
         party.audience.sendMessage(separator {
-            append(text(sender.getChatName(true)))
+            append(text(senderPlayer.getChatName(actualData = true, colourPrefixOnly = false)))
             append(text(" has hijacked the party!", NamedTextColor.YELLOW))
         })
 
-        party.switchOwner(sender)
+        party.switchOwner(senderPlayer)
     }
 
     @CommandMethod("party|p accept <target>")
-    fun acceptParty(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
-        target.getCurrentParty()?.acceptPendingInvite(sender)
+    fun acceptParty(senderPlayer: ArcadePlayer, @Argument("target") target: ArcadePlayer) = command(senderPlayer) {
+        target.getCurrentParty()?.acceptPendingInvite(senderPlayer)
     }
 
     @CommandMethod("party|p kick <target>")
-    fun kickParty(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
-        val party = sender.getCurrentParty(true) ?: return@command
-        if (!party.isLeader(sender)) {
-            sender.audience.sendMessage(separator {
+    fun kickParty(senderPlayer: ArcadePlayer, @Argument("target") target: ArcadePlayer) = command(senderPlayer) {
+        val party = senderPlayer.getCurrentParty(true) ?: return@command
+        if (!party.isLeader(senderPlayer)) {
+            senderPlayer.audience.sendMessage(separator {
                 append(text("You are not the party leader.", NamedTextColor.RED))
             })
             return@command
         }
 
-        party.removeMember(target, true, true)
+        party.removeMember(target, broadcast = true, isKick = true)
 
     }
 
     @CommandMethod("party|p list")
-    fun listParty(senderPlayer: Player) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
-        val party = sender.getCurrentParty(true) ?: return@command
+    fun listParty(senderPlayer: ArcadePlayer) = command(senderPlayer) {
+        val party = senderPlayer.getCurrentParty(true) ?: return@command
 
-        sender.audience.sendMessage(party.listMessage)
+        senderPlayer.audience.sendMessage(party.listMessage)
     }
 
     @RequiredRank(HypixelPackageRank.ADMIN)
     @CommandMethod("party|p list <target>")
-    fun listPartyOther(senderPlayer: Player, @Argument("target") target: PlayerData) = command(senderPlayer) {
-        val sender = senderPlayer.getPlayerData()
+    fun listPartyOther(senderPlayer: ArcadePlayer, @Argument("target") target: ArcadePlayer) = command(senderPlayer) {
         val party = target.getCurrentParty() ?: run {
-            sender.audience.sendMessage(separator {
-                append(text(target.getChatName(true)))
+            senderPlayer.audience.sendMessage(separator {
+                append(text(target.getChatName(actualData = true, colourPrefixOnly = false)))
                 append(text(" is not in a party right now.", NamedTextColor.RED))
             })
             return@command
         }
 
-        sender.audience.sendMessage(party.listMessage)
+        senderPlayer.audience.sendMessage(party.listMessage)
     }
 }

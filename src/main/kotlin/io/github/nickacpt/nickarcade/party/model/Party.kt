@@ -1,8 +1,10 @@
 package io.github.nickacpt.nickarcade.party.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.events.impl.party.PartyPlayerLeaveEvent
 import io.github.nickacpt.nickarcade.utils.interop.async
+import io.github.nickacpt.nickarcade.utils.interop.callEvent
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.separator
 import kotlinx.coroutines.CoroutineScope
@@ -40,22 +42,22 @@ data class Party(
         return it.role == MemberRole.LEADER
     }
 
-    fun isLeader(it: PlayerData): Boolean {
+    fun isLeader(it: ArcadePlayer): Boolean {
         return getPlayerRole(it) == MemberRole.LEADER
     }
 
-    fun getPlayerRole(player: PlayerData): MemberRole {
+    fun getPlayerRole(player: ArcadePlayer): MemberRole {
         return members[player.uuid]?.role ?: MemberRole.NONE
     }
 
     val totalMembersCount
         get() = members.count()
 
-    fun hasPendingInvite(player: PlayerData): Boolean {
+    fun hasPendingInvite(player: ArcadePlayer): Boolean {
         return getPlayerRole(player) == MemberRole.PENDING_INVITE
     }
 
-    fun switchOwner(newOwner: PlayerData, addOldOwner: Boolean = true) {
+    fun switchOwner(newOwner: ArcadePlayer, addOldOwner: Boolean = true) {
         if (addOldOwner) {
             getMembersWithRole(MemberRole.LEADER).forEach {
                 setRole(it, MemberRole.MEMBER)
@@ -68,7 +70,7 @@ data class Party(
         setRole(it.player, role)
     }
 
-    private fun setRole(it: PlayerData, role: MemberRole) {
+    private fun setRole(it: ArcadePlayer, role: MemberRole) {
         val shouldSetParty = members[it.uuid]?.role == MemberRole.PENDING_INVITE
         members[it.uuid]?.role = role
         if (shouldSetParty) {
@@ -76,7 +78,7 @@ data class Party(
         }
     }
 
-    fun invitePlayer(sender: PlayerData, target: PlayerData) {
+    fun invitePlayer(sender: ArcadePlayer, target: ArcadePlayer) {
         if (!canInvitePlayers(sender)) {
             sender.audience.sendMessage(separator {
                 append(text("You can't invite players to this party!", NamedTextColor.RED))
@@ -123,13 +125,13 @@ data class Party(
         }.clickEvent(ClickEvent.runCommand(command)).hoverEvent(text("Click to run $command")))
     }
 
-    private fun canInvitePlayers(sender: PlayerData): Boolean {
+    private fun canInvitePlayers(sender: ArcadePlayer): Boolean {
         return getPlayerRole(sender).canInvitePlayers
     }
 
     private fun scheduleInviteExpirationActions(
-        sender: PlayerData,
-        target: PlayerData
+        sender: ArcadePlayer,
+        target: ArcadePlayer
     ): suspend CoroutineScope.() -> Unit = scope@{
         addMember(target, role = MemberRole.PENDING_INVITE)
         delay(partyExpiryTime)
@@ -150,7 +152,7 @@ data class Party(
         })
     }
 
-    fun addMember(member: PlayerData, broadcast: Boolean = false, role: MemberRole = MemberRole.MEMBER) {
+    fun addMember(member: ArcadePlayer, broadcast: Boolean = false, role: MemberRole = MemberRole.MEMBER) {
         //Remove member from old party
         member.getCurrentParty()?.removeMember(member, broadcast = true)
 
@@ -164,7 +166,7 @@ data class Party(
         }
     }
 
-    private fun broadcastPlayerJoin(member: PlayerData) {
+    private fun broadcastPlayerJoin(member: ArcadePlayer) {
         audience.sendMessage(separator {
             append(text(member.getChatName(true)))
             append(text(" joined the party.", NamedTextColor.YELLOW))
@@ -172,7 +174,7 @@ data class Party(
     }
 
     fun removeMember(
-        member: PlayerData,
+        member: ArcadePlayer,
         broadcast: Boolean = false,
         isKick: Boolean = false
     ) {
@@ -188,6 +190,7 @@ data class Party(
         }
         members.remove(member.uuid)
         member.setCurrentParty(null)
+        PartyPlayerLeaveEvent(this, member).callEvent()
     }
 
     private fun TextComponent.Builder.appendPlayerData(member: PartyMember) {
@@ -200,7 +203,7 @@ data class Party(
 
     fun disband() {
         if (totalMembersCount == 0) return
-        membersList.forEach {
+        membersList.toList().forEach {
             removeMember(it.player)
         }
     }
@@ -220,7 +223,7 @@ data class Party(
         return id.hashCode()
     }
 
-    fun acceptPendingInvite(target: PlayerData) {
+    fun acceptPendingInvite(target: ArcadePlayer) {
         if (!hasPendingInvite(target)) {
             target.audience.sendMessage(separator {
                 append(text("That party has been disbanded.", NamedTextColor.RED))
@@ -232,7 +235,7 @@ data class Party(
         broadcastPlayerJoin(target)
     }
 
-    fun canModifySettings(player: PlayerData): Boolean {
+    fun canModifySettings(player: ArcadePlayer): Boolean {
         return getPlayerRole(player).canModifySettings
     }
 

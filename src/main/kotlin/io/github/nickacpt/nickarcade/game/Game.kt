@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.game
 
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.BaseMiniGame
 import net.kyori.adventure.audience.Audience
@@ -13,11 +13,11 @@ data class Game(
     val arenaDefinition: ArenaDefinition,
     val arena: Instance
 ) {
-    fun addPlayer(player: PlayerData) {
+    suspend fun addPlayer(player: ArcadePlayer) {
         MiniGameManager.addPlayer(this, player)
     }
 
-    val members: MutableList<PlayerData> = mutableListOf()
+    val members: MutableList<ArcadePlayer> = mutableListOf()
     val state: GameState = GameState.WAITING_FOR_PLAYERS
     val audience: Audience = GameAudience(this)
 

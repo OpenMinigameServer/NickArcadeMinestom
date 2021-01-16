@@ -5,25 +5,27 @@ import cloud.commandframework.arguments.parser.ParserParameters
 import cloud.commandframework.arguments.parser.StandardParameters
 import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
 import cloud.commandframework.meta.SimpleCommandMeta
+import io.github.nickacpt.nickarcade.data.player.ArcadeSender
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.utils.permission
-import net.minestom.server.command.CommandSender
+import kotlinx.coroutines.runBlocking
 import java.util.function.BiFunction
 
 
 class NickArcadeCommandHelper {
 
-    lateinit var annotationParser: AnnotationParser<CommandSender>
-    lateinit var manager: NickArcadeCommandManager<CommandSender>
+    lateinit var annotationParser: AnnotationParser<ArcadeSender>
+    lateinit var manager: NickArcadeCommandManager<ArcadeSender>
 
 
     fun init(): NickArcadeCommandHelper {
         val executionCoordinatorFunction =
-            AsynchronousCommandExecutionCoordinator.newBuilder<CommandSender>().build()
+            AsynchronousCommandExecutionCoordinator.newBuilder<ArcadeSender>().build()
         try {
-            val commandSenderMapper: (t: CommandSender) -> CommandSender = { it }
             manager = NickArcadeCommandManager(
                 executionCoordinatorFunction,
-                MinestomCommandRegistrationHandler
+                { runBlocking { it.getArcadeSender() } },
+                { it.commandSender }
             )
 
             val commandMetaFunction =
@@ -40,7 +42,7 @@ class NickArcadeCommandHelper {
                 }
             annotationParser = AnnotationParser( /* Manager */
                 manager,  /* Command sender type */
-                CommandSender::class.java,  /* Mapper for command meta instances */
+                ArcadeSender::class.java,  /* Mapper for command meta instances */
                 commandMetaFunction
             )
 
@@ -52,7 +54,7 @@ class NickArcadeCommandHelper {
         return this
     }
 
-    private fun setupRequiredRankAnnotation(annotationParser: AnnotationParser<CommandSender>) {
+    private fun setupRequiredRankAnnotation(annotationParser: AnnotationParser<ArcadeSender>) {
         annotationParser.registerBuilderModifier(RequiredRank::class.java, BiFunction { annotation, builder ->
             return@BiFunction builder.permission(annotation.value)
         })

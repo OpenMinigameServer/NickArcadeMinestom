@@ -1,6 +1,7 @@
 package io.github.nickacpt.nickarcade.game
 
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.events.impl.game.PlayerJoinGameEvent
 import io.github.nickacpt.nickarcade.events.impl.game.PlayerLeaveGameEvent
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
@@ -29,38 +30,41 @@ object MiniGameManager {
 
     private val playerGames = mutableMapOf<UUID, Game>()
 
-    fun isInGame(player: PlayerData): Boolean = getCurrentGame(player) != null
+    fun isInGame(player: ArcadePlayer): Boolean = getCurrentGame(player) != null
 
-    fun getCurrentGame(player: PlayerData): Game? {
+    fun getCurrentGame(player: ArcadePlayer): Game? {
         return playerGames[player.uuid]
     }
 
-    fun addPlayer(game: Game, player: PlayerData) {
-//        val playerParty = player.getCurrentParty(false)
-//        if (playerParty != null) {
-//            if (playerParty.isLeader(player)) {
-//                playerParty.members.forEach {
-//                    addPlayerInternal(it, game)
-//                }
-//            }
-//            return
-//        }
+    suspend fun addPlayer(game: Game, player: ArcadePlayer) {
+        val playerParty = player.getCurrentParty(false)
+        if (playerParty != null) {
+            if (playerParty.isLeader(player)) {
+                playerParty.membersList.forEach {
+                    addPlayerInternal(it.player, game)
+                }
+            }
+            return
+        }
 
         addPlayerInternal(player, game)
     }
 
-    private fun addPlayerInternal(
-        player: PlayerData,
+    suspend fun addPlayerInternal(
+        player: ArcadePlayer,
         game: Game
     ) {
-        teleportPlayerToArena(player, game)
         playerGames[player.uuid] = game
+        PlayerDataManager.reloadProfile(player)
+
+        teleportPlayerToArena(player, game)
+
         game.members.add(player)
-        PlayerJoinGameEvent(game, player).callEvent()
+        PlayerJoinGameEvent(game, player, game.playerCount).callEvent()
     }
 
     private fun teleportPlayerToArena(
-        player: PlayerData,
+        player: ArcadePlayer,
         game: Game
     ) {
         val minestomPlayer = player.player
@@ -68,7 +72,7 @@ object MiniGameManager {
         minestomPlayer?.respawn()
     }
 
-    fun removePlayer(game: Game, player: PlayerData) {
+    fun removePlayer(game: Game, player: ArcadePlayer) {
         game.members.removeIf { it == player }
         playerGames.remove(player.uuid)
         PlayerLeaveGameEvent(game, player).callEvent()

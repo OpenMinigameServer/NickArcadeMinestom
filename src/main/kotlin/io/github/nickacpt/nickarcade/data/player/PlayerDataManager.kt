@@ -7,6 +7,7 @@ import io.github.nickacpt.nickarcade.utils.interop.logger
 import io.github.nickacpt.nickarcade.utils.interop.name
 import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.pluginInstance
+import io.github.nickacpt.nickarcade.utils.profiles.reloadProfile
 import net.minestom.server.command.CommandSender
 import net.minestom.server.entity.Player
 import org.litote.kmongo.upsert
@@ -14,7 +15,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 object PlayerDataManager {
-    private val loadedPlayerMap = ConcurrentHashMap<UUID, PlayerData>()
+    private val loadedPlayerMap = ConcurrentHashMap<UUID, ArcadePlayer>()
 
     fun isPlayerDataLoaded(id: UUID): Boolean {
         val impersonation = ImpersonationManager.getImpersonation(id)
@@ -24,10 +25,10 @@ object PlayerDataManager {
         return loadedPlayerMap.containsKey(id)
     }
 
-    private suspend fun createPlayerDataFromHypixel(id: UUID, name: String): PlayerData {
-        return PlayerData(id, fetchHypixelPlayerData(id, name)).also {
-            if (it.effectiveRank == HypixelPackageRank.NONE || it.effectiveRank == HypixelPackageRank.NORMAL) {
-                it.overrides.rankOverride = HypixelPackageRank.VIP_PLUS
+    private suspend fun createPlayerDataFromHypixel(id: UUID, name: String): ArcadePlayer {
+        return ArcadePlayer(id, fetchHypixelPlayerData(id, name)).also {
+            if (it.effectiveRank >= HypixelPackageRank.HELPER) {
+                it.overrides.rankOverride = HypixelPackageRank.MVP_PLUS
             }
         }
     }
@@ -48,7 +49,7 @@ object PlayerDataManager {
         }
     }
 
-    suspend fun getPlayerData(uniqueId: UUID, name: String): PlayerData {
+    suspend fun getPlayerData(uniqueId: UUID, name: String): ArcadePlayer {
         return if (loadedPlayerMap[uniqueId] != null) {
             loadedPlayerMap[uniqueId]!!
         } else {
@@ -61,7 +62,7 @@ object PlayerDataManager {
     }
 
     val playerDataCollection by lazy {
-        pluginInstance.database.getCollection<PlayerData>("players")
+        pluginInstance.database.getCollection<ArcadePlayer>("players")
     }
 
     suspend fun saveAndRemovePlayerData(uuid: UUID) {
@@ -79,30 +80,28 @@ object PlayerDataManager {
         }
     }
 
-    suspend fun savePlayerData(it: PlayerData) {
+    suspend fun savePlayerData(it: ArcadeSender) {
         //Don't save Console Player Data
-        if (it.uuid == UUID(0, 0)) return
+        if (it == consoleData) return
 
         logger.info("Saving player data for ${it.displayName} [${it.uuid}]")
         playerDataCollection.updateOneById(it.uuid, it, upsert())
     }
 
-    suspend fun reloadProfile(player: PlayerData) {
-        io.github.nickacpt.nickarcade.utils.profiles.reloadProfile(player, true) {}
+    suspend fun reloadProfile(player: ArcadePlayer) {
+        reloadProfile(player, true) {}
     }
 
-    fun storeInMemory(data: PlayerData) {
+    fun storeInMemory(data: ArcadePlayer) {
         loadedPlayerMap[data.uuid] = data
     }
 }
 
-val consoleData = PlayerData(
-    UUID(0, 0),
-    HypixelPlayer("Server Console", "Server Console", newPackageRank = HypixelPackageRank.ADMIN),
-    PlayerOverrides()
-)
+val consoleData = ArcadeConsole
 
-suspend fun CommandSender.getPlayerData(): PlayerData {
+suspend fun Player.getArcadeSender(): ArcadePlayer = (this as CommandSender).getArcadeSender() as ArcadePlayer
+
+suspend fun CommandSender.getArcadeSender(): ArcadeSender {
     if (this !is Player) {
         return consoleData
     }

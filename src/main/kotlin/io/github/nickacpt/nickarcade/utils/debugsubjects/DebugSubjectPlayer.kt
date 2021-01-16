@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils.debugsubjects
 
 import com.google.gson.JsonParser
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.utils.asAudience
 import net.kyori.adventure.platform.minestom.MinestomComponentSerializer
 import net.kyori.adventure.text.Component
@@ -24,7 +24,7 @@ class DebugSubjectConnection : PlayerConnection() {
     }
 }
 
-class DebugSubjectPlayer(val owner: Player, val target: PlayerData) :
+class DebugSubjectPlayer(val owner: Player, val target: ArcadePlayer) :
     Player(target.uuid, target.actualDisplayName, DebugSubjectConnection()) {
     private val prefix = "[${target.actualDisplayName}] "
     override fun sendMessage(message: String) {

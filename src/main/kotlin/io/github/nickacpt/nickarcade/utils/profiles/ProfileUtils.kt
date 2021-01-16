@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils.profiles
 
-import io.github.nickacpt.nickarcade.data.player.PlayerData
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
@@ -11,14 +11,14 @@ import net.minestom.server.entity.Player
 
 
 suspend fun Player.getDisplayProfile(): DumpedProfile? {
-    return getPlayerData().displayOverrides.displayProfile
+    return (getArcadeSender() as? ArcadePlayer)?.displayOverrides?.displayProfile
 }
 
 suspend inline fun reloadProfile(
-    data: PlayerData,
+    data: ArcadePlayer,
     reloadProfile: Boolean = false,
     rejoinProfile: Boolean = false,
-    code: suspend PlayerData.() -> Unit
+    code: suspend ArcadePlayer.() -> Unit
 ) {
     if (rejoinProfile && reloadProfile) PlayerDataLeaveEvent(data, true).callEvent()
     code(data)
@@ -27,7 +27,7 @@ suspend inline fun reloadProfile(
 }
 
 suspend fun Player.setDisplayProfile(profile: DumpedProfile?, reloadProfile: Boolean = false) {
-    reloadProfile(getPlayerData(), reloadProfile) {
+    reloadProfile(getArcadeSender(), reloadProfile) {
         actualPlayerProfile = profile?.asPlayerProfile()
         setDisplayName(null)
         displayOverrides.displayProfile = profile

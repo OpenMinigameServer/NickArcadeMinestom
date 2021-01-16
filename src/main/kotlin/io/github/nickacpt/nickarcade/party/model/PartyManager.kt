@@ -1,17 +1,17 @@
 package io.github.nickacpt.nickarcade.party.model
 
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import java.util.*
 
 object PartyManager {
     private val playerParty = mutableMapOf<UUID, Party>()
 
-    fun createParty(player: PlayerData): Party {
+    fun createParty(player: ArcadePlayer): Party {
         return Party().apply { addMember(player, role = MemberRole.LEADER) }
     }
 
 
-    fun setPlayerParty(player: PlayerData, party: Party?) {
+    fun setPlayerParty(player: ArcadePlayer, party: Party?) {
         if (party != null) {
             playerParty[player.uuid] = party
             return
@@ -21,7 +21,7 @@ object PartyManager {
     }
 
 
-    fun getParty(player: PlayerData): Party? {
+    fun getParty(player: ArcadePlayer): Party? {
         return playerParty[player.uuid]
     }
 }

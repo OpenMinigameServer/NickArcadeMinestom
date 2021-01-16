@@ -1,6 +1,6 @@
 package io.github.nickacpt.nickarcade.utils
 
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.scoreboard.ScoreboardDataProviderManager
 import io.github.nickacpt.nickarcade.utils.interop.getLastColors
 import io.github.nickacpt.nickarcade.utils.interop.toNative
@@ -19,7 +19,7 @@ object ScoreboardManager {
     }
 
     suspend fun setPlayerInfo(joinedPlayer: Player) {
-        val data = joinedPlayer.getPlayerData()
+        val data = joinedPlayer.getArcadeSender()
 
         val playerName = data.displayName
         val teamManager = MinecraftServer.getTeamManager()
@@ -29,11 +29,13 @@ object ScoreboardManager {
 
         val scoreData = ScoreboardDataProviderManager.computeData(data)
         team.prefix = text(scoreData.prefix ?: "").toNative()
-        team.suffix = text(scoreData.suffix ?: "").toNative()
+        team.suffix = text(scoreData.suffix?.trimEnd()?.let { " $it" } ?: "").toNative()
 
         //Compute team color
-        ChatColor.fromLegacyColorCodes(getLastColors(scoreData.prefix ?: "").replace("§", "").first()).let {
-            team.teamColor = it
+        getLastColors(scoreData.prefix ?: "").replace("§", "").firstOrNull()?.let { message ->
+            ChatColor.fromLegacyColorCodes(message).let {
+                team.teamColor = it
+            }
         }
 
         if (team.members.contains(playerName)) {

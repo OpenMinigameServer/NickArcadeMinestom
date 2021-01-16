@@ -4,7 +4,7 @@ import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
@@ -30,7 +30,7 @@ fun registerJoinEvents() {
         sendPlayerDataActionBar()
 
         val playerData = async {
-            player.getPlayerData()
+            player.getArcadeSender()
         }
 
         callEvent(PlayerDataJoinEvent(playerData))
@@ -42,7 +42,7 @@ fun registerJoinEvents() {
     cancelEvent<PlayerChatEvent>
     {
 //        player.skin = pluginInstance.walterProfile(player.uniqueId, player.name).toSkin()
-        val playerData = this.player.getPlayerData()
+        val playerData = this.player.getArcadeSender()
         val channel = ChatChannelsManager.getChannelByType(playerData.currentChannel)
         channel.sendMessageInternal(playerData, this.message, ChatMessageOrigin.CHAT)
     }
@@ -108,7 +108,7 @@ fun registerLeaveEvents() {
 }
 
 private suspend fun handleLeave(playerId: UUID) {
-    val data = MinecraftServer.getConnectionManager().getPlayer(playerId)?.getPlayerData() ?: return
+    val data = MinecraftServer.getConnectionManager().getPlayer(playerId)?.getArcadeSender() ?: return
     PlayerDataLeaveEvent(data).callEvent()
     PlayerDataManager.saveAndRemovePlayerData(playerId)
 }

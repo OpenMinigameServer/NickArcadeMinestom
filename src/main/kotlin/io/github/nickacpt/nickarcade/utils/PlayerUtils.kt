@@ -1,7 +1,7 @@
 package io.github.nickacpt.nickarcade.utils
 
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.events.toPlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.PlayerProfile
 import io.github.nickacpt.nickarcade.utils.interop.ProfileProperty
@@ -15,7 +15,7 @@ import java.util.*
 import kotlin.time.Duration
 
 suspend fun Player.cooldown(name: String, cooldownDuration: Duration, code: (suspend () -> Unit)? = null): Boolean {
-    val playerData = this.getPlayerData()
+    val playerData = this.getArcadeSender()
     val lastUse = playerData.cooldowns[name]
     val finishTime = lastUse?.plus(cooldownDuration.inMilliseconds)
     return if (finishTime == null || System.currentTimeMillis() > finishTime) {

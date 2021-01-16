@@ -5,6 +5,7 @@ package io.github.nickacpt.nickarcade.utils
 import cloud.commandframework.Command
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.NickArcadeExtension
+import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.utils.debugsubjects.DebugSubjectPlayer
 import io.github.nickacpt.nickarcade.utils.interop.*
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +23,14 @@ import net.minestom.server.entity.Player
 import net.minestom.server.event.CancellableEvent
 import net.minestom.server.event.Event
 import net.minestom.server.event.player.AsyncPlayerPreLoginEvent
+
+fun command(
+    sender: ArcadeSender,
+    requiredRank: HypixelPackageRank = HypixelPackageRank.NONE,
+    block: suspend CoroutineScope.() -> Unit
+) {
+    command(sender.commandSender, requiredRank, block)
+}
 
 fun command(
     sender: CommandSender,

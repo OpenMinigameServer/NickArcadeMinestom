@@ -2,19 +2,17 @@ package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.CommandMethod
 import io.github.nickacpt.nickarcade.chat.ChatEmote
-import io.github.nickacpt.nickarcade.data.player.getPlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.game.MiniGameManager
-import io.github.nickacpt.nickarcade.utils.asAudience
 import io.github.nickacpt.nickarcade.utils.command
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor.*
-import net.minestom.server.command.CommandSender
-import net.minestom.server.entity.Player
 
 object MiscCommands {
     @CommandMethod("emotes")
-    fun emotesCommand(sender: CommandSender) = command(sender) {
-        val asAudience = sender.asAudience
+    fun emotesCommand(sender: ArcadeSender) = command(sender) {
+        val asAudience = sender.audience
         asAudience.sendMessage(text {
             it.append(text("Available to ", GREEN))
             it.append(text("MVP", GOLD))
@@ -32,14 +30,13 @@ object MiscCommands {
     }
 
     @CommandMethod("lobby|l")
-    fun lobbyCommand(sender: Player) = command(sender) {
-        val player = sender.getPlayerData()
+    fun lobbyCommand(sender: ArcadePlayer) = command(sender) {
 
-        val currentGame = player.getCurrentGame()
+        val currentGame = sender.getCurrentGame()
         if (currentGame != null) {
-            currentGame.let { MiniGameManager.removePlayer(it, player) }
+            currentGame.let { MiniGameManager.removePlayer(it, sender) }
         } else {
-            player.audience.sendMessage(text("You are already on a lobby!", RED))
+            sender.audience.sendMessage(text("You are already on a lobby!", RED))
         }
     }
 }

@@ -5,7 +5,8 @@ import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor.*
 import io.github.nickacpt.hypixelapi.utis.profile.Profile
 import io.github.nickacpt.hypixelapi.utis.profile.ProfileApi
 import io.github.nickacpt.nickarcade.chat.ChatChannelType
-import io.github.nickacpt.nickarcade.data.player.PlayerData
+import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
 import io.github.nickacpt.nickarcade.utils.*
@@ -26,6 +27,12 @@ fun registerPlayerDataEvents() {
         val data = player
         val player = data.player ?: return@event
 
+        //Cleanup party disguise profile
+        if (data.displayOverrides.isPartyDisguise) {
+            data.displayOverrides.displayProfile = null
+            data.displayOverrides.isPartyDisguise = false
+        }
+
         if (data.currentChannel.isInternal) {
             data.currentChannel = ChatChannelType.ALL
         }
@@ -36,14 +43,16 @@ fun registerPlayerDataEvents() {
         }
     }
 
-    event<PlayerDataReloadEvent> {
+    event<PlayerDataJoinEvent> {
+        showLobbyMessage()
+    }
 
+    event<PlayerDataReloadEvent> {
         val minestomPlayer = player.player ?: return@event
         minestomPlayer.setDisplayProfile(player.displayOverrides.displayProfile)
         player.displayOverrides.isProfileOverridden = true
         setupPermissions(player, minestomPlayer)
         refreshPlayerTeams()
-        showLobbyMessage()
     }
 }
 
@@ -57,7 +66,7 @@ fun Profile.toPlayerProfile(): PlayerProfile {
     }
 }
 
-fun setupPermissions(player: PlayerData, minestomPlayer: Player) {
+fun setupPermissions(player: ArcadePlayer, minestomPlayer: Player) {
     HypixelPackageRank.values().forEach {
         if (player.hasAtLeastRank(it, true)) {
             minestomPlayer.addPermission(Permission(it.name.toLowerCase()))
@@ -67,7 +76,7 @@ fun setupPermissions(player: PlayerData, minestomPlayer: Player) {
     }
 }
 
-private fun PlayerDataReloadEvent.showLobbyMessage() {
+private fun PlayerDataJoinEvent.showLobbyMessage() {
     val superStarColors = listOf(BLUE, RED, GREEN)
     val joinPrefix =
         if (player.hasAtLeastDisplayRank(HypixelPackageRank.SUPERSTAR)) " ${superStarColors.joinToString("") { "$it>" }} " else ""
