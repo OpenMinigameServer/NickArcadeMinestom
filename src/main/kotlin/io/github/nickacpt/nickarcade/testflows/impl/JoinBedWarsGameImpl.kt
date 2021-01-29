@@ -16,7 +16,7 @@ object JoinBedWarsGameImpl : TestFlowImplementation {
         2,
         "glacier",
         54f,
-        GamePosition(0f, 60f, 0f)
+        GamePosition(0.0, 60.0, 0.0)
     )
 
     override suspend fun execute(launcher: ArcadePlayer) {

@@ -3,6 +3,7 @@ package io.github.nickacpt.nickarcade.party.model
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.events.impl.party.PartySettingChangedEvent
+import io.github.nickacpt.nickarcade.party.PartySetting
 import io.github.nickacpt.nickarcade.utils.interop.callEvent
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.findAnnotation

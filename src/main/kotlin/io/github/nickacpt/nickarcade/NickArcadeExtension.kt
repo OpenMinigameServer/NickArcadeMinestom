@@ -15,8 +15,11 @@ import io.github.nickacpt.nickarcade.utils.ComponentUtils
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandHelper
 import io.github.nickacpt.nickarcade.utils.config.ArcadeConfigurationFile
 import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
+import io.github.openminigameserver.replay.ReplayExtension
+import io.github.openminigameserver.worldedit.MinestomWorldEdit
 import net.minestom.server.MinecraftServer
 import net.minestom.server.extensions.Extension
+import org.apache.commons.lang3.reflect.FieldUtils
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import java.io.File
@@ -42,6 +45,11 @@ class NickArcadeExtension : Extension() {
     lateinit var hypixelPlayerInfoHelper: HypixelPlayerInfoHelper
 
     override fun initialize() {
+        MinestomWorldEdit().apply { FieldUtils.writeField(this, "logger", this@NickArcadeExtension.logger, true) }
+            .initialize()
+        ReplayExtension().apply { FieldUtils.writeField(this, "logger", this@NickArcadeExtension.logger, true) }
+            .initialize()
+
         instance = this
         commandManager = NickArcadeCommandHelper().init()
         registerDisplayPacketHandler()

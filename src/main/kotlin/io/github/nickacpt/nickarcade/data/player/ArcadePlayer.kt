@@ -15,8 +15,8 @@ import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.impersonation.ImpersonationManager
 import io.github.nickacpt.nickarcade.game.Game
 import io.github.nickacpt.nickarcade.game.MiniGameManager
+import io.github.nickacpt.nickarcade.party.PartyManager
 import io.github.nickacpt.nickarcade.party.model.Party
-import io.github.nickacpt.nickarcade.party.model.PartyManager
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
 import io.github.nickacpt.nickarcade.utils.interop.getLastColors
 import io.github.nickacpt.nickarcade.utils.minestomAudiences
@@ -42,6 +42,11 @@ class ArcadePlayer(
 ) : ArcadeSender(uuid) {
     @JsonIgnore
     val extraData = mutableMapOf<String, Any?>()
+
+    @JsonIgnore
+    operator fun <T> contains(dataTag: ExtraDataTag<T>): Boolean {
+        return get(dataTag) != null
+    }
 
     @JsonIgnore
     operator fun <T> get(dataTag: ExtraDataTag<T>): T? {

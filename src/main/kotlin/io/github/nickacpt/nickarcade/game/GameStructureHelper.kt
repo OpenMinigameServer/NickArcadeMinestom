@@ -16,13 +16,13 @@ object GameStructureHelper {
 
     fun createWaitingLobby(instance: Instance): GamePosition? {
         val clipboard = SchematicManager.getClipboard(SchematicName.LOBBY) ?: return null
-        var y = Chunk.CHUNK_SIZE_Y - clipboard.dimensions.y.toFloat()
+        var y = Chunk.CHUNK_SIZE_Y - clipboard.dimensions.y.toDouble()
         val instanceClipboard = instance.clipboard
         if (instanceClipboard != null) {
             y =
-                (instanceClipboard.maximumPoint.y + (instanceClipboard.origin.subtract(instanceClipboard.minimumPoint)).y).toFloat()
+                (instanceClipboard.maximumPoint.y + (instanceClipboard.origin.subtract(instanceClipboard.minimumPoint)).y).toDouble()
         }
-        val finalPos = GamePosition(0f, y, 0f)
+        val finalPos = GamePosition(0.0, y, 0.0)
 
         val asWorld = MinestomAdapter.asWorld(instance)
         WorldEdit.getInstance().newEditSessionBuilder().world(asWorld).build().use { editSession ->

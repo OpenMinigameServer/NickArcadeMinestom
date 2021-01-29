@@ -8,7 +8,7 @@ import cloud.commandframework.kotlin.extension.buildAndRegister
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.ArcadeSender
-import io.github.nickacpt.nickarcade.party.model.PartySetting
+import io.github.nickacpt.nickarcade.party.PartySetting
 import io.github.nickacpt.nickarcade.party.model.PartySettings
 import io.github.nickacpt.nickarcade.utils.command
 import io.github.nickacpt.nickarcade.utils.commands.NickArcadeCommandManager

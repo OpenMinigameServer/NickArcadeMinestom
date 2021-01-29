@@ -1,5 +1,6 @@
-package io.github.nickacpt.nickarcade.party.model
+package io.github.nickacpt.nickarcade.party
 
+import io.github.nickacpt.nickarcade.party.model.Party
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.audience.ForwardingAudience
 

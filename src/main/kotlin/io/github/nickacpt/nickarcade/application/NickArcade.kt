@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
     val server = MinecraftServer.init()
 //    MinecraftServer.setShouldProcessNettyErrors(true)
 //    MojangAuth.init()
-    println("Offline Auth disabled")
+    println("Offline Auth enabled")
     OptifineSupport.enable()
     PlacementRules.init()
     MinecraftServer.setGroupedPacket(false)

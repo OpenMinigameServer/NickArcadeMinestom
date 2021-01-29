@@ -11,10 +11,13 @@ group = "io.github.nickacpt"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     maven("https://maven.enginehub.org/repo/")
     maven { setUrl("https://jitpack.io") }
     maven { setUrl("https://libraries.minecraft.net") }
     maven { setUrl("https://repo.spongepowered.org/maven") }
+    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
+    maven(url = "https://kotlin.bintray.com/kotlinx/")
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots/") {
         name = "sonatype-oss"
     }
@@ -22,22 +25,23 @@ repositories {
     mavenCentral()
 }
 
-val cloudVersion = "1.3.0"
+val cloudVersion = "1.4.0"
 val configurateVersion = "4.0.0"
 val kMongoVersion = "4.2.3"
 val adventureVersion = "4.2.0-SNAPSHOT"
+val minestomVersion = "7a54b4162d"
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation(minestom("238ea649ab"))
+    implementation(minestom(minestomVersion))
     compileOnly("org.jetbrains:annotations:20.1.0")
 
     implementation(project(":Hypixel-API"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 
-    implementation("com.github.OpenMinigameServer:cloud-minestom:8914014169")
+    implementation("com.github.OpenMinigameServer:cloud-minestom:58e8fd76f3")
 
     implementation("cloud.commandframework:cloud-annotations:$cloudVersion") {
         exclude(module = "geantyref")
@@ -59,9 +63,11 @@ dependencies {
     implementation("com.github.mworzala:adventure-platform-minestom:b61596ccef") {
         exclude(module = "Minestom")
     }
-    implementation("com.github.OpenMinigameServer:MinestomWorldEdit:4df8468025")
-}
+    implementation("com.github.OpenMinigameServer:MinestomWorldEdit:d667d61c63")
 
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.12.1"))
+    implementation("com.github.OpenMinigameServer.Replay:Replay:f0825af41d")
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11

@@ -3,6 +3,7 @@ package io.github.nickacpt.nickarcade.party.model
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.events.impl.party.PartyPlayerLeaveEvent
+import io.github.nickacpt.nickarcade.party.PartyAudience
 import io.github.nickacpt.nickarcade.utils.interop.async
 import io.github.nickacpt.nickarcade.utils.interop.callEvent
 import io.github.nickacpt.nickarcade.utils.pluginInstance

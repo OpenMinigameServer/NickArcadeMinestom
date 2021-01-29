@@ -1,6 +1,8 @@
-package io.github.nickacpt.nickarcade.party.model
+package io.github.nickacpt.nickarcade.party
 
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
+import io.github.nickacpt.nickarcade.party.model.MemberRole
+import io.github.nickacpt.nickarcade.party.model.Party
 import java.util.*
 
 object PartyManager {
@@ -9,7 +11,6 @@ object PartyManager {
     fun createParty(player: ArcadePlayer): Party {
         return Party().apply { addMember(player, role = MemberRole.LEADER) }
     }
-
 
     fun setPlayerParty(player: ArcadePlayer, party: Party?) {
         if (party != null) {
