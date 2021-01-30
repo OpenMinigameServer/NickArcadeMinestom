@@ -66,7 +66,7 @@ dependencies {
     implementation("com.github.OpenMinigameServer:MinestomWorldEdit:d667d61c63")
 
     implementation(platform("com.fasterxml.jackson:jackson-bom:2.12.1"))
-    implementation("com.github.OpenMinigameServer.Replay:Replay:f0825af41d")
+    implementation("com.github.OpenMinigameServer.Replay:Replay:f9bc4e80da")
 }
 
 java {

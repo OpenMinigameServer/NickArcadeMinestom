@@ -7,13 +7,14 @@ import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
 import io.github.nickacpt.nickarcade.game.definition.position.GamePosition
 import io.github.nickacpt.nickarcade.party.model.MemberRole
+import io.github.nickacpt.nickarcade.party.model.PartySettings
 import io.github.nickacpt.nickarcade.utils.interop.getOnlinePlayers
 
 object JoinBedWarsGameImpl : TestFlowImplementation {
     val arena = ArenaDefinition(
         "Glacier",
-        1,
         2,
+        4,
         "glacier",
         54f,
         GamePosition(0.0, 60.0, 0.0)
@@ -30,7 +31,8 @@ object JoinBedWarsGameImpl : TestFlowImplementation {
             arena
         )!!
 
-//        party.settings.setPropertyAndNotify(launcher, PartySettings::allNick, true)
+        party.settings.setPropertyAndNotify(launcher, PartySettings::privateMode, true)
+        party.settings.setPropertyAndNotify(launcher, PartySettings::developerMode, true)
 
 //        delay(2.seconds)
 

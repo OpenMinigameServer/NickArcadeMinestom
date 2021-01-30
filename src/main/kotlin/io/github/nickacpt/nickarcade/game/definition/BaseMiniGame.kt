@@ -3,20 +3,29 @@ package io.github.nickacpt.nickarcade.game.definition
 import io.github.nickacpt.nickarcade.game.Game
 import io.github.nickacpt.nickarcade.game.GameStructureHelper
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicManager
+import net.minestom.server.instance.Instance
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.seconds
 
 abstract class BaseMiniGame {
     abstract val type: MiniGameType
 
-    protected inline fun <reified T> gameEvent(noinline handler: suspend T.(Game) -> Unit) {
-        TODO("GameEvent not implemented yet!")
-    }
+    val lobbyWaitTime: Duration
+        get() = 30.seconds
 
     fun createGame(arenaDefinition: ArenaDefinition): Game? {
         val arena = SchematicManager.getInstanceForSchematic(arenaDefinition.schematicId)
             ?: throw Exception("Unable to find arena with schematic id ${arenaDefinition.schematicId}")
 
         val spawnPosition = GameStructureHelper.createWaitingLobby(arena) ?: return null
-        return Game(UUID.randomUUID(), this, arenaDefinition.copy(spawnPosition = spawnPosition), arena)
+        return provideGameInstance(UUID.randomUUID(), this, arenaDefinition.copy(spawnPosition = spawnPosition), arena)
     }
+
+    abstract fun provideGameInstance(
+        gameId: UUID,
+        miniGame: BaseMiniGame,
+        arenaDefinition: ArenaDefinition,
+        arena: Instance
+    ): Game
 }

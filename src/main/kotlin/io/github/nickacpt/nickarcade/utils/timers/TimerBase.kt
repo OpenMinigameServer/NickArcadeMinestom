@@ -13,13 +13,30 @@ abstract class TimerBase constructor(private val duration: Duration, private val
 
     var elapsedTime: Duration = Duration.ZERO
     private val isRunning get() = elapsedTime < duration
+    var isPaused = false
+    private var hasStarted = false
+
+    fun restart() {
+        stop()
+        isPaused = false
+        start()
+    }
+
+    fun stop() {
+        isPaused = true
+        elapsedTime = Duration.ZERO
+    }
 
     fun start() {
+        if (hasStarted) return
         NickArcadeExtension.instance.launch {
+            hasStarted = true
             while (isRunning) {
-                onTick(elapsedTime, this)
                 delay(stepTime)
-                elapsedTime += stepTime
+                if (!isPaused) {
+                    onTick(elapsedTime, this)
+                    elapsedTime += stepTime
+                }
             }
         }
     }

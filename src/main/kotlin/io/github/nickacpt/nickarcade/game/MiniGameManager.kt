@@ -1,5 +1,6 @@
 package io.github.nickacpt.nickarcade.game
 
+import io.github.nickacpt.hypixelapi.utis.MinecraftChatColor
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.events.impl.game.PlayerJoinGameEvent
@@ -8,7 +9,11 @@ import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.BaseMiniGame
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
 import io.github.nickacpt.nickarcade.game.impl.BedWarsMiniGame
+import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.interop.callEvent
+import io.github.nickacpt.nickarcade.utils.separator
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
 import java.util.*
 
 object MiniGameManager {
@@ -25,7 +30,7 @@ object MiniGameManager {
     fun createGame(type: MiniGameType, definition: ArenaDefinition): Game? {
         val miniGame = miniGames[type] ?: throw Exception("MiniGame ${type.friendlyName} was not registered.")
 
-        return miniGame.createGame(definition)
+        return miniGame.createGame(definition)?.apply { state = GameState.WAITING_FOR_PLAYERS }
     }
 
     private val playerGames = mutableMapOf<UUID, Game>()
@@ -40,8 +45,12 @@ object MiniGameManager {
         val playerParty = player.getCurrentParty(false)
         if (playerParty != null) {
             if (playerParty.isLeader(player)) {
+                val shouldHostParty = game.playerCount == 0 && playerParty.isPrivateGameParty()
                 playerParty.membersList.forEach {
                     addPlayerInternal(it.player, game)
+                }
+                if (shouldHostParty) {
+                    game.hostParty = playerParty
                 }
             }
             return
@@ -61,6 +70,7 @@ object MiniGameManager {
 
         game.members.add(player)
         PlayerJoinGameEvent(game, player, game.playerCount).callEvent()
+        game.refreshTimers()
     }
 
     private fun teleportPlayerToArena(
@@ -76,5 +86,23 @@ object MiniGameManager {
         game.members.removeIf { it == player }
         playerGames.remove(player.uuid)
         PlayerLeaveGameEvent(game, player).callEvent()
+        game.refreshTimers()
+    }
+
+    fun notifyPartyHost(game: Game, party: Party?) {
+        if (game.hostParty == party) return
+        game.audience.sendMessage(separator {
+            if (party != null) {
+                append(
+                    text(
+                        "This game is now being hosted by ${
+                            party.getLeaders()
+                                .joinToString(separator = "${MinecraftChatColor.GOLD}, ") { it.player.getChatName(true) }
+                        }${MinecraftChatColor.GOLD}'s party.", NamedTextColor.GOLD)
+                )
+            } else {
+                append(text("This game is no longer being hosted by a party."))
+            }
+        })
     }
 }

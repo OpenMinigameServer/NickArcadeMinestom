@@ -7,6 +7,7 @@ import io.github.nickacpt.nickarcade.schematics.ReadOnlyClipboard
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.openminigameserver.worldedit.platform.chunkloader.ExtentChunkLoader
 import net.minestom.server.MinecraftServer
+import net.minestom.server.data.DataImpl
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.InstanceContainer
 import java.io.File
@@ -44,6 +45,7 @@ object SchematicManager {
     fun getInstanceForSchematic(name: String): Instance? {
         val clipboard = getClipboard(name) ?: return null
         return MinecraftServer.getInstanceManager().createInstanceContainer().apply {
+            data = DataImpl()
             enableAutoChunkLoad(true)
             chunkLoader = ExtentChunkLoader(ReadOnlyClipboard(clipboard))
         }

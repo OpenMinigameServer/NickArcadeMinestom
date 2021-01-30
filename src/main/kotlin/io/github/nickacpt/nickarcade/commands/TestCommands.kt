@@ -123,8 +123,8 @@ object TestCommands {
             type,
             ArenaDefinition(
                 "Glacier",
-                1,
                 2,
+                4,
                 "glacier",
                 54f,
                 GamePosition(0.0, 60.0, 0.0)

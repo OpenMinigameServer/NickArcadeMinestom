@@ -27,6 +27,10 @@ data class Party(
     val membersList
         get() = members.values
 
+    fun getLeaders(): List<PartyMember> {
+        return getMembersWithRole(MemberRole.LEADER)
+    }
+
     fun getMembersWithRole(role: MemberRole): List<PartyMember> {
         return membersList.filter { it.role == role }
     }
@@ -238,6 +242,14 @@ data class Party(
 
     fun canModifySettings(player: ArcadePlayer): Boolean {
         return getPlayerRole(player).canModifySettings
+    }
+
+    fun isPrivateGameParty(): Boolean {
+        return settings.privateMode
+    }
+
+    fun isDeveloperGameParty(): Boolean {
+        return settings.developerMode
     }
 
     val listMessage: Component
