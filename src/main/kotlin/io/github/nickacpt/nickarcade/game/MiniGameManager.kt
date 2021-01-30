@@ -70,7 +70,6 @@ object MiniGameManager {
 
         game.members.add(player)
         PlayerJoinGameEvent(game, player, game.playerCount).callEvent()
-        game.refreshTimers()
     }
 
     private fun teleportPlayerToArena(
@@ -86,7 +85,6 @@ object MiniGameManager {
         game.members.removeIf { it == player }
         playerGames.remove(player.uuid)
         PlayerLeaveGameEvent(game, player).callEvent()
-        game.refreshTimers()
     }
 
     fun notifyPartyHost(game: Game, party: Party?) {

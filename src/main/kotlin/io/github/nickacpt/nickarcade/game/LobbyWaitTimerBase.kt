@@ -4,6 +4,8 @@ import io.github.nickacpt.nickarcade.utils.timers.CountDownTimer
 import kotlinx.coroutines.CoroutineScope
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.minestom.server.sound.Sound
+import net.minestom.server.sound.SoundCategory
 import kotlin.time.Duration
 
 class LobbyWaitTimerBase(val game: Game, time: Duration) : CountDownTimer(time) {
@@ -17,7 +19,10 @@ class LobbyWaitTimerBase(val game: Game, time: Duration) : CountDownTimer(time) 
         game.debug("Lobby wait time: ${time}s")
         val shouldShowTime = time <= 5 || time == 15 || time == 10
 
-        if (shouldShowTime)
+        if (shouldShowTime) {
+
+            game.members.mapNotNull { it.player }
+                .forEach { it.playSound(Sound.BLOCK_NOTE_BLOCK_HAT, SoundCategory.BLOCKS, 20f, 1f) }
             game.audience.sendMessage(Component.text {
                 val color = when {
                     time == 15 -> {
@@ -34,6 +39,7 @@ class LobbyWaitTimerBase(val game: Game, time: Duration) : CountDownTimer(time) 
                 it.append(Component.text(time, color))
                 it.append(Component.text(" second${if (time != 1) "s" else ""}!", NamedTextColor.YELLOW))
             })
+        }
     }
 
     override suspend fun onCountDownFinish(scope: CoroutineScope) {

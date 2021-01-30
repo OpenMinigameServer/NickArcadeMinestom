@@ -12,7 +12,7 @@ abstract class BaseMiniGame {
     abstract val type: MiniGameType
 
     val lobbyWaitTime: Duration
-        get() = 30.seconds
+        get() = 15.seconds
 
     fun createGame(arenaDefinition: ArenaDefinition): Game? {
         val arena = SchematicManager.getInstanceForSchematic(arenaDefinition.schematicId)

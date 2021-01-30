@@ -10,7 +10,7 @@ abstract class CountDownTimer(private val duration: Duration, stepTime: Duration
     abstract suspend fun onCountDownFinish(scope: CoroutineScope)
 
     override suspend fun onTick(duration: Duration, scope: CoroutineScope) {
-        val finalDuration = (this.duration - duration - 1.seconds).coerceAtLeast(0.seconds)
+        val finalDuration = (this.duration - duration).coerceAtLeast(0.seconds)
         if (finalDuration != Duration.ZERO) {
             onCountDownTick(finalDuration, scope)
         } else {
