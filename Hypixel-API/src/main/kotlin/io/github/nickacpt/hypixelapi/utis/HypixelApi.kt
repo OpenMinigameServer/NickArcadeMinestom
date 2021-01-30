@@ -36,7 +36,6 @@ object HypixelApi {
 
     val objectMapper by lazy { configureMapper(jacksonObjectMapper()) }
 
-
     fun configureMapper(mapper: ObjectMapper): ObjectMapper {
         return mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)

@@ -1,5 +1,6 @@
 package io.github.nickacpt.hypixelapi
 
+import io.github.nickacpt.hypixelapi.responses.KeyResult
 import io.github.nickacpt.hypixelapi.responses.PlayerResult
 import io.github.nickacpt.hypixelapi.responses.RawPlayerResult
 import retrofit2.http.GET
@@ -18,4 +19,6 @@ interface HypixelService {
     @Deprecated("This endpoint was deprecated by Hypixel.")
     suspend fun getPlayerByName(@Query("name") name: String): PlayerResult
 
+    @GET("/key")
+    suspend fun getKeyInformation(): KeyResult
 }
