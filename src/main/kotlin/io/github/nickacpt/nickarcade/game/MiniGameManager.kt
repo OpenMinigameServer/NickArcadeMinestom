@@ -7,6 +7,7 @@ import io.github.nickacpt.nickarcade.events.impl.game.PlayerJoinGameEvent
 import io.github.nickacpt.nickarcade.events.impl.game.PlayerLeaveGameEvent
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.BaseMiniGame
+import io.github.nickacpt.nickarcade.game.definition.MiniGameMode
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
 import io.github.nickacpt.nickarcade.game.impl.BedWarsMiniGame
 import io.github.nickacpt.nickarcade.party.model.Party
@@ -27,10 +28,10 @@ object MiniGameManager {
         miniGames[miniGame.type] = miniGame
     }
 
-    fun createGame(type: MiniGameType, definition: ArenaDefinition): Game? {
+    fun createGame(type: MiniGameType, mode: MiniGameMode, definition: ArenaDefinition): Game? {
         val miniGame = miniGames[type] ?: throw Exception("MiniGame ${type.friendlyName} was not registered.")
 
-        return miniGame.createGame(definition)?.apply { state = GameState.WAITING_FOR_PLAYERS }
+        return miniGame.createGame(definition, mode)?.apply { state = GameState.WAITING_FOR_PLAYERS }
     }
 
     private val playerGames = mutableMapOf<UUID, Game>()
@@ -63,6 +64,7 @@ object MiniGameManager {
         player: ArcadePlayer,
         game: Game
     ) {
+        playerGames[player.uuid]?.let { old -> removePlayer(old, player) }
         playerGames[player.uuid] = game
         PlayerDataManager.reloadProfile(player)
 

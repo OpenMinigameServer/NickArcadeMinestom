@@ -6,4 +6,6 @@ interface IScoreboardDataProvider {
     fun providePrefix(player: ArcadePlayer): String? = null
 
     fun provideSuffix(player: ArcadePlayer): String? = null
+
+    fun provideSideBar(player: ArcadePlayer): SidebarData? = null
 }

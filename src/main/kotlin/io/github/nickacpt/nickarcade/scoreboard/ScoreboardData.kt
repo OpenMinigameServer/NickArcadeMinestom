@@ -1,3 +1,3 @@
 package io.github.nickacpt.nickarcade.scoreboard
 
-data class ScoreboardData(val prefix: String? = null, val suffix: String? = null)
+data class ScoreboardData(val prefix: String? = null, val suffix: String? = null, val sideBar: SidebarData?)

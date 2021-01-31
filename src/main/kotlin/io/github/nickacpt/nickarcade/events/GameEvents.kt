@@ -12,6 +12,7 @@ import io.github.nickacpt.nickarcade.utils.profiles.ProfilesManager
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
+import net.minestom.server.MinecraftServer
 
 fun registerGameEvents() {
     event<PartyPlayerLeaveEvent> {
@@ -71,7 +72,16 @@ fun registerGameEvents() {
             it.append(text(" has quit!", NamedTextColor.YELLOW))
         })
         val minestomPlayer = player.player ?: return@event
-        minestomPlayer.setInstance(lobbyInstance)
+        if (lobbyInstance != minestomPlayer.instance)
+            minestomPlayer.setInstance(lobbyInstance)
+
+        if (game.playerCount == 0) {
+            //Discard game instance
+            game.stopTimers()
+
+            MinecraftServer.getInstanceManager().unregisterInstance(game.arena)
+        }
+
         PlayerDataManager.reloadProfile(player)
     }
 }

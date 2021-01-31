@@ -45,6 +45,7 @@ object SchematicManager {
     fun getInstanceForSchematic(name: String): Instance? {
         val clipboard = getClipboard(name) ?: return null
         return MinecraftServer.getInstanceManager().createInstanceContainer().apply {
+            timeRate = 0
             data = DataImpl()
             enableAutoChunkLoad(true)
             chunkLoader = ExtentChunkLoader(ReadOnlyClipboard(clipboard))

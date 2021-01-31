@@ -12,6 +12,7 @@ import io.github.nickacpt.nickarcade.game.MiniGameManager
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
 import io.github.nickacpt.nickarcade.game.definition.position.GamePosition
+import io.github.nickacpt.nickarcade.game.impl.BedWarsMode
 import io.github.nickacpt.nickarcade.testflows.TestFlow
 import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.RanksHelper.randomPlayerOverrides
@@ -121,6 +122,7 @@ object TestCommands {
 
         val game = MiniGameManager.createGame(
             type,
+            BedWarsMode.SOLO,
             ArenaDefinition(
                 "Glacier",
                 2,

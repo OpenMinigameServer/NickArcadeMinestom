@@ -14,17 +14,24 @@ abstract class BaseMiniGame {
     val lobbyWaitTime: Duration
         get() = 15.seconds
 
-    fun createGame(arenaDefinition: ArenaDefinition): Game? {
+    fun createGame(arenaDefinition: ArenaDefinition, mode: MiniGameMode): Game? {
         val arena = SchematicManager.getInstanceForSchematic(arenaDefinition.schematicId)
             ?: throw Exception("Unable to find arena with schematic id ${arenaDefinition.schematicId}")
 
         val spawnPosition = GameStructureHelper.createWaitingLobby(arena) ?: return null
-        return provideGameInstance(UUID.randomUUID(), this, arenaDefinition.copy(spawnPosition = spawnPosition), arena)
+        return provideGameInstance(
+            UUID.randomUUID(),
+            this,
+            mode,
+            arenaDefinition.copy(spawnPosition = spawnPosition),
+            arena
+        )
     }
 
     abstract fun provideGameInstance(
         gameId: UUID,
         miniGame: BaseMiniGame,
+        mode: MiniGameMode,
         arenaDefinition: ArenaDefinition,
         arena: Instance
     ): Game

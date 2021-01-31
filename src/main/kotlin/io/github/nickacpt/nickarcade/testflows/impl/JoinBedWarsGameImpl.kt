@@ -6,6 +6,7 @@ import io.github.nickacpt.nickarcade.game.MiniGameManager
 import io.github.nickacpt.nickarcade.game.definition.ArenaDefinition
 import io.github.nickacpt.nickarcade.game.definition.MiniGameType
 import io.github.nickacpt.nickarcade.game.definition.position.GamePosition
+import io.github.nickacpt.nickarcade.game.impl.BedWarsMode
 import io.github.nickacpt.nickarcade.party.model.MemberRole
 import io.github.nickacpt.nickarcade.party.model.PartySettings
 import io.github.nickacpt.nickarcade.utils.interop.getOnlinePlayers
@@ -28,6 +29,7 @@ object JoinBedWarsGameImpl : TestFlowImplementation {
 
         val createGame = MiniGameManager.createGame(
             MiniGameType.BED_WARS,
+            BedWarsMode.SOLO,
             arena
         )!!
 

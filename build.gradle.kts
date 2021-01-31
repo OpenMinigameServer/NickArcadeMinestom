@@ -4,6 +4,7 @@ plugins {
     java
     kotlin("jvm") version "1.4.21"
     id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("org.zeroturnaround.gradle.jrebel") version "1.1.10"
     application
 }
 
@@ -59,6 +60,7 @@ dependencies {
     implementation("org.litote.kmongo:kmongo-coroutine:$kMongoVersion")
 
     implementation("net.kyori:adventure-api:4.3.0")
+    implementation("net.kyori:adventure-text-serializer-legacy:4.0.0-SNAPSHOT")
     implementation("net.kyori:adventure-platform-api:4.0.0-SNAPSHOT")
     implementation("com.github.mworzala:adventure-platform-minestom:b61596ccef") {
         exclude(module = "Minestom")

@@ -1,14 +1,17 @@
 package io.github.nickacpt.nickarcade.commands
 
 import cloud.commandframework.annotations.CommandMethod
+import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
 import io.github.nickacpt.nickarcade.NickArcadeExtension
 import io.github.nickacpt.nickarcade.chat.ChatEmote
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.game.MiniGameManager
 import io.github.nickacpt.nickarcade.utils.command
+import io.github.nickacpt.nickarcade.utils.commands.RequiredRank
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor.*
+import net.minestom.server.MinecraftServer
 
 object MiscCommands {
     @CommandMethod("apistats|apistatus")
@@ -21,6 +24,17 @@ object MiscCommands {
             it.append(text(info.record!!.limit, GREEN))
             it.append(text(" queries to Hypixel in the last minute.", GOLD))
         })
+    }
+
+    @CommandMethod("stats|status")
+    @RequiredRank(HypixelPackageRank.ADMIN)
+    fun statusCommand(sender: ArcadeSender) = command(sender) {
+        val instances = MinecraftServer.getInstanceManager().instances
+        sender.audience.sendMessage(
+            text("There are ", GOLD)
+                .append(text(instances.size - 1, GREEN)) //Remove 1 for lobby instance
+                .append(text(" game instances currently running.", GOLD))
+        )
     }
 
     @CommandMethod("emotes")

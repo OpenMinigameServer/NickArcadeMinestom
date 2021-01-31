@@ -20,6 +20,7 @@ object ScoreboardDataProviderManager {
     fun computeData(player: ArcadePlayer): ScoreboardData {
         val prefix = providers.mapNotNull { it.providePrefix(player) }.firstOrNull()
         val suffix = providers.mapNotNull { it.provideSuffix(player) }.firstOrNull()
-        return ScoreboardData(prefix, suffix)
+        val sideBar = providers.mapNotNull { it.provideSideBar(player) }.firstOrNull()
+        return ScoreboardData(prefix, suffix, sideBar)
     }
 }

@@ -1,5 +1,7 @@
 package io.github.nickacpt.nickarcade.events
 
+import io.github.nickacpt.nickarcade.data.player.getArcadeSender
+import io.github.nickacpt.nickarcade.game.GameState
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicManager
 import io.github.nickacpt.nickarcade.schematics.manager.SchematicName
 import io.github.nickacpt.nickarcade.schematics.manager.clipboard
@@ -53,12 +55,15 @@ fun registerPlayerEvents() {
         val data = player.instance?.getBlockData(this.blockPosition)
         if (data == null || !data.hasKey(playerPlacedTag)) {
             isCancelled = true
-            player.asAudience.sendMessage(
-                Component.text(
-                    "You can only break blocks placed by players!",
-                    NamedTextColor.RED
+            val arcadeSender = this.player.getArcadeSender()
+            if (arcadeSender.getCurrentGame()?.state == GameState.IN_GAME) {
+                player.asAudience.sendMessage(
+                    Component.text(
+                        "You can only break blocks placed by players!",
+                        NamedTextColor.RED
+                    )
                 )
-            )
+            }
         }
     }
 
