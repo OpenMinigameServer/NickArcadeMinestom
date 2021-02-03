@@ -84,8 +84,9 @@ configure<SourceSetContainer> {
 
 tasks {
 
-    application {
+    compileKotlin.get().dependsOn(generateRebel)
 
+    application {
         mainClassName = ("io.github.nickacpt.nickarcade.application.NickArcadeKt")
     }
 /*

@@ -41,7 +41,8 @@ object ImpersonateCommands {
         command(sender) {
             val senderAudience = sender.audience
             performPlayerReLogin(sender) {
-                ImpersonationManager.removeImpersonation(sender.uuid)
+                val id = sender.player!!.uuid
+                ImpersonationManager.removeImpersonation(id)
                 senderAudience.sendMessage(
                     text(
                         "You are no longer impersonating a user.",

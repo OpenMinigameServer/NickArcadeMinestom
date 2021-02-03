@@ -144,6 +144,7 @@ private fun NickArcadeCommandHelper.registerCommands() {
     annotationParser.parse(MiscCommands)
     annotationParser.parse(RankCommands)
     annotationParser.parse(ChatCommands)
+    annotationParser.parse(InviteCommands)
     ChatChannelsManager.registerChatChannelCommands(this)
     RankCommands.registerOverrideRanksCommands(this)
 }

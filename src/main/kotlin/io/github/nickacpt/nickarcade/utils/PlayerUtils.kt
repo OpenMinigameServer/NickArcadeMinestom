@@ -46,12 +46,20 @@ var Player.playerProfile: PlayerProfile
 
     }
     set(value) {
-        FieldUtils.writeDeclaredField(this, "username", value.name, true)
+        if (value.name != null) actualUserName = value.name!!
         val properties: List<ProfileProperty> = value.properties
         if (properties.isNotEmpty()) {
             val (_, value1, signature) = properties.stream().findFirst().get()
             skin = PlayerSkin(value1, signature)
         }
+    }
+
+var Player.actualUserName: String
+    get() {
+        return this.username
+    }
+    set(value) {
+        FieldUtils.writeDeclaredField(this, "username", value, true)
     }
 
 suspend fun Player.getPlayerProfile() =
@@ -64,7 +72,7 @@ var Player.actualPlayerProfile: PlayerProfile?
             oldProfiles[uniqueId] = playerProfile
 
         val finalProfile = value ?: oldProfiles[uniqueId]!!
-        this.playerProfile = finalProfile
+        this.playerProfile = finalProfile.copy(name = username)
     }
 var Player.profileName: String
     get() = playerProfile.name ?: name

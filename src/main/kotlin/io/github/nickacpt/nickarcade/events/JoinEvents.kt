@@ -5,39 +5,28 @@ import io.github.nickacpt.nickarcade.chat.ChatChannelsManager
 import io.github.nickacpt.nickarcade.chat.ChatMessageOrigin
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
 import io.github.nickacpt.nickarcade.data.player.getArcadeSender
-import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataJoinEvent
 import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataLeaveEvent
-import io.github.nickacpt.nickarcade.events.impl.data.PlayerDataReloadEvent
+import io.github.nickacpt.nickarcade.invite.InviteManager
 import io.github.nickacpt.nickarcade.utils.*
 import io.github.nickacpt.nickarcade.utils.interop.callEvent
-import io.github.nickacpt.nickarcade.utils.interop.launch
 import io.github.nickacpt.nickarcade.utils.interop.name
 import io.github.nickacpt.nickarcade.utils.interop.uniqueId
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import net.kyori.adventure.platform.minestom.MinestomComponentSerializer
+import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.format.NamedTextColor.*
 import net.minestom.server.MinecraftServer
+import net.minestom.server.entity.Player
 import net.minestom.server.event.player.*
 import java.util.*
 
 fun registerJoinEvents() {
+    MinecraftServer.getConnectionManager().setPlayerProvider { uuid, username, connection ->
+        Player(uuid, username, connection)
+    }
     registerOfflineModeOnlineIds()
     registerPreLoginEvent()
-
-    event<PlayerLoginEvent> {
-        sendPlayerDataActionBar()
-
-        val playerData = async {
-            player.getArcadeSender()
-        }
-
-        callEvent(PlayerDataJoinEvent(playerData))
-        callEvent(PlayerDataReloadEvent(playerData))
-    }
-
-
 
     cancelEvent<PlayerChatEvent>
     {
@@ -73,33 +62,33 @@ private fun registerOfflineModeOnlineIds() {
 val validNamePattern = Regex("^[a-zA-Z0-9_]{3,16}\$")
 private fun registerPreLoginEvent() {
     event<AsyncPlayerPreLoginEvent> {
+        if (!InviteManager.hasPlayerReceivedInvite(playerUuid)) {
+            player.kick(MinestomComponentSerializer.get().serialize(text {
+                it.append(text("You are not allowed to join this server!", RED).append(newline()))
+                it.append(newline())
+                it.append(
+                    text("Reason: ", GRAY).append(
+                        text(
+                            "You have not received an invite to play on this server.",
+                            WHITE
+                        )
+                    ).append(newline())
+                )
+            }))
+            return@event
+        }
+
         val isValidName = validNamePattern.matchEntire(this.username) != null
 
         if (!isValidName) {
             player.kick("You are using an invalid Minecraft name and thus you got denied access.")
-        } else if (PlayerDataManager.isPlayerDataLoaded(this.playerUuid)) {
+        } /*else if (PlayerDataManager.isPlayerDataLoaded(this.playerUuid)) {
             PlayerDataManager.saveAndRemovePlayerData(this.playerUuid)
             player.kick("Please wait while we save your data to join again.")
-        }
+        }*/
     }
 }
 
-private fun PlayerLoginEvent.sendPlayerDataActionBar() {
-    pluginInstance.launch {
-        val audience = player.asAudience
-        while (!PlayerDataManager.isPlayerDataLoaded(player.uniqueId)) {
-            audience.sendActionBar(
-                text(
-                    "Fetching player data from Hypixel, please wait!",
-                    NamedTextColor.RED,
-                    TextDecoration.BOLD
-                )
-            )
-            delay(5.ticks)
-        }
-        audience.sendActionBar(text("Player data fetched from Hypixel! Have a nice stay.", NamedTextColor.GREEN))
-    }
-}
 
 fun registerLeaveEvents() {
     event<PlayerDisconnectEvent> {

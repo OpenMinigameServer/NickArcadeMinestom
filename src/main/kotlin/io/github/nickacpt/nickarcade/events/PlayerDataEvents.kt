@@ -47,11 +47,23 @@ fun registerPlayerDataEvents() {
         showLobbyMessage()
     }
 
-    event<PlayerDataReloadEvent> {
+    event<PlayerDataReloadEvent>(forceBlocking = true) {
         val minestomPlayer = player.player ?: return@event
-        minestomPlayer.setDisplayProfile(player.displayOverrides.displayProfile)
-        player.displayOverrides.isProfileOverridden = true
+        val profile = player.displayOverrides.displayProfile
+        val canDisguiseFreely = player.hasAtLeastRank(HypixelPackageRank.YOUTUBER, true)
+        val isInGame = player.getCurrentGame() != null
+        val shouldApplyProfile = profile == null || canDisguiseFreely || isInGame
+
+        val playerName = player.overrides.nameOverride ?: player.hypixelData?.displayName
+        if (playerName != null) {
+            minestomPlayer.actualUserName = playerName
+            if (profile == null) minestomPlayer.skin = minestomPlayer.skin
+        }
+
+        if (shouldApplyProfile) minestomPlayer.setDisplayProfile(profile)
+        player.displayOverrides.isProfileOverridden = shouldApplyProfile
         setupPermissions(player, minestomPlayer)
+
         refreshPlayerTeams()
     }
 }
@@ -71,8 +83,8 @@ fun setupPermissions(player: ArcadePlayer, minestomPlayer: Player) {
         if (player.hasAtLeastRank(it, true)) {
             minestomPlayer.addPermission(Permission(it.name.toLowerCase()))
         }
-        if (player.hasAtLeastRank(HypixelPackageRank.ADMIN))
-            minestomPlayer.addPermission(Permission("worldedit.*"))
+//        if (player.hasAtLeastRank(HypixelPackageRank.ADMIN))
+//            minestomPlayer.addPermission(Permission("worldedit.*"))
     }
 }
 

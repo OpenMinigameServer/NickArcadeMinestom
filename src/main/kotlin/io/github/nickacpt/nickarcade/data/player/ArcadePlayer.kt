@@ -19,6 +19,7 @@ import io.github.nickacpt.nickarcade.party.PartyManager
 import io.github.nickacpt.nickarcade.party.model.Party
 import io.github.nickacpt.nickarcade.utils.debugsubjects.RedirectAudience
 import io.github.nickacpt.nickarcade.utils.interop.getLastColors
+import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.minestomAudiences
 import io.github.nickacpt.nickarcade.utils.separator
 import net.kyori.adventure.audience.Audience
@@ -102,7 +103,9 @@ class ArcadePlayer(
                 0,
                 0
             )
-        ) minestomAudiences.console() else minestomAudiences.player(uuid)
+        ) minestomAudiences.console() else minestomAudiences.player(
+            ImpersonationManager.getImpersonatorPlayer(uuid)?.uniqueId ?: uuid
+        )
 
     @JsonIgnore
     fun asRedirectAudience(name: String): Audience {
@@ -151,7 +154,7 @@ class ArcadePlayer(
 
     @get:JsonIgnore
     val actualDisplayName: String
-        get() = hypixelData?.displayName ?: ""
+        get() = overrides.nameOverride ?: hypixelData?.displayName ?: ""
 
     @get:JsonIgnore
     val effectiveRank: HypixelPackageRank

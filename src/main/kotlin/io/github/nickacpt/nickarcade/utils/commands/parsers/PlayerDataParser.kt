@@ -6,6 +6,7 @@ import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPlayer
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
+import io.github.nickacpt.nickarcade.data.player.PlayerOverrides
 import io.github.nickacpt.nickarcade.data.player.getArcadeSender
 import io.github.nickacpt.nickarcade.utils.div
 import io.github.nickacpt.nickarcade.utils.interop.getOnlinePlayers
@@ -14,6 +15,7 @@ import io.github.nickacpt.nickarcade.utils.sync
 import kotlinx.coroutines.runBlocking
 import org.litote.kmongo.eq
 import org.litote.kmongo.include
+import org.litote.kmongo.or
 import java.util.*
 
 class PlayerDataParser<C> : ArgumentParser<C, ArcadePlayer> {
@@ -25,7 +27,7 @@ class PlayerDataParser<C> : ArgumentParser<C, ArcadePlayer> {
 
                 //Try a name
                 var data = getPlayer(argument)?.getArcadeSender()
-                if (data != null && data.displayOverrides.displayProfile != null) {
+                if (data != null && data.displayOverrides.displayProfile != null && data.displayOverrides.displayProfile?.displayName == argument) {
                     //Do not expose nicked players
                     data = null
                 }
@@ -38,8 +40,14 @@ class PlayerDataParser<C> : ArgumentParser<C, ArcadePlayer> {
 
                 //Try finding from the displayName of a PlayerData
                 if (data == null) {
+                    val displayNameOverride = ArcadePlayer::overrides / PlayerOverrides::nameOverride
                     val displayName = ArcadePlayer::rawHypixelData / HypixelPlayer::displayName
-                    val foundPlayer = PlayerDataManager.playerDataCollection.findOne(displayName eq argument)
+                    val foundPlayer = PlayerDataManager.playerDataCollection.findOne(
+                        or(
+                            displayNameOverride eq argument,
+                            displayName eq argument
+                        )
+                    )
                     if (foundPlayer != null) {
                         data = foundPlayer
                     }
@@ -74,9 +82,10 @@ class PlayerDataParser<C> : ArgumentParser<C, ArcadePlayer> {
     override fun suggestions(commandContext: CommandContext<C>, input: String): MutableList<String> {
         return runBlocking {
             val displayName = ArcadePlayer::rawHypixelData / HypixelPlayer::displayName
+            val displayNameOverride = ArcadePlayer::overrides / PlayerOverrides::nameOverride
             val allElements =
                 PlayerDataManager.playerDataCollection.find()
-                    .projection(include(ArcadePlayer::uuid, displayName))
+                    .projection(include(ArcadePlayer::uuid, displayName, displayNameOverride))
                     .toList()
 
             return@runBlocking (allElements.map {

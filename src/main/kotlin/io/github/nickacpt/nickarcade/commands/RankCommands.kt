@@ -5,6 +5,7 @@ import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.context.CommandContext
 import io.github.nickacpt.hypixelapi.models.HypixelPackageRank
+import io.github.nickacpt.nickarcade.data.DisplayOverrides
 import io.github.nickacpt.nickarcade.data.player.ArcadePlayer
 import io.github.nickacpt.nickarcade.data.player.ArcadeSender
 import io.github.nickacpt.nickarcade.data.player.PlayerDataManager
@@ -17,12 +18,16 @@ import io.github.nickacpt.nickarcade.utils.permission
 import net.kyori.adventure.text.Component.newline
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.NamedTextColor.GREEN
+import net.kyori.adventure.text.format.NamedTextColor.YELLOW
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.apache.commons.lang3.StringUtils
 import org.checkerframework.checker.nullness.qual.NonNull
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.exists
+import org.litote.kmongo.ne
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.jvmErasure
@@ -39,8 +44,35 @@ object RankCommands {
             text {
                 it.append(text(player.getChatName(true)))
                 it.append(text(" is player's display on this server.", GREEN))
+                if (player.displayOverrides.displayProfile != null) {
+                    it.append(newline())
+                    it.append(text(player.getChatName(false)))
+                    it.append(text(" is player's /nick display on this server.", GREEN))
+                }
             }
         }
+    }
+
+
+    @RequiredRank(HypixelPackageRank.ADMIN)
+    @CommandMethod("ranks|rank listnicked")
+    fun listNickedPlayerInfo(
+        sender: ArcadeSender
+    ) = command(sender, HypixelPackageRank.ADMIN) {
+        val displayProfileOverrides = ArcadePlayer::displayOverrides / DisplayOverrides::displayProfile
+        val players = PlayerDataManager.playerDataCollection
+            .find(displayProfileOverrides ne null)
+            .toList()
+
+        sender.audience.sendMessage(text("All nicked players:", NamedTextColor.GOLD))
+        sender.audience.sendMessage(text(players.joinToString("\n") { p ->
+            LegacyComponentSerializer.legacySection().serialize(text {
+                it.append(text(p.getChatName(true)))
+                it.append(text(" is nicked with name ", YELLOW))
+                it.append(text(p.getChatName(false)))
+            })
+        }, NamedTextColor.GOLD))
+
     }
 
 
@@ -131,7 +163,11 @@ object RankCommands {
         {
             command(it.sender, HypixelPackageRank.ADMIN) {
                 val player = it.get<ArcadePlayer>("player")
-                val valueFinal = it.getOrDefault<T>("value", null)
+                var valueFinal = it.getOrDefault<T>("value", null)
+                if (valueFinal is String) {
+                    valueFinal = valueFinal.replace('&', '§') as T
+                }
+                val originalName = player.displayName
                 prop.set(player.overrides, valueFinal)
                 val changed = StringUtils.join(
                     StringUtils.splitByCharacterTypeCamelCase(propChanged),
@@ -143,8 +179,8 @@ object RankCommands {
                         if (valueFinal is Enum<*>) {
                             valueFinalToString = valueFinal.name.toLowerCase().split('_').joinToString(" ").capitalize()
                         }
-                        "Successfully set ${player.displayName}'s $changed to $valueFinalToString"
-                    } else "Successfully reset ${player.displayName}'s $changed"
+                        "Successfully set $originalName's $changed to $valueFinalToString"
+                    } else "Successfully reset $originalName's $changed"
 
                 PlayerDataManager.savePlayerData(player)
                 PlayerDataManager.reloadProfile(player)
