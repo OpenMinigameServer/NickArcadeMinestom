@@ -82,10 +82,13 @@ private fun registerPreLoginEvent() {
 
         if (!isValidName) {
             player.kick("You are using an invalid Minecraft name and thus you got denied access.")
-        } /*else if (PlayerDataManager.isPlayerDataLoaded(this.playerUuid)) {
+        } else if (PlayerDataManager.isPlayerDataLoaded(this.playerUuid)) {
             PlayerDataManager.saveAndRemovePlayerData(this.playerUuid)
-            player.kick("Please wait while we save your data to join again.")
-        }*/
+            player.kick(
+                MinestomComponentSerializer.get()
+                    .serialize(text("Please wait while we save your previous session", YELLOW))
+            )
+        }
     }
 }
 
