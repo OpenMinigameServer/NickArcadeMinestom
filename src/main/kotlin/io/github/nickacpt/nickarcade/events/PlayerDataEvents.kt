@@ -79,6 +79,9 @@ fun Profile.toPlayerProfile(): PlayerProfile {
 }
 
 fun setupPermissions(player: ArcadePlayer, minestomPlayer: Player) {
+    minestomPlayer.allPermissions.forEach {
+        minestomPlayer.removePermission(it)
+    }
     HypixelPackageRank.values().forEach {
         if (player.hasAtLeastRank(it, true)) {
             minestomPlayer.addPermission(Permission(it.name.toLowerCase()))
