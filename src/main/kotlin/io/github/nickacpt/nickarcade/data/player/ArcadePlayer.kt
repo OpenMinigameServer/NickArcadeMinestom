@@ -22,6 +22,7 @@ import io.github.nickacpt.nickarcade.utils.interop.getLastColors
 import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.minestomAudiences
 import io.github.nickacpt.nickarcade.utils.separator
+import kotlinx.datetime.Instant
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component.*
 import net.kyori.adventure.text.event.HoverEventSource
@@ -40,6 +41,7 @@ class ArcadePlayer(
     val cooldowns: MutableMap<String, Long> = mutableMapOf(),
     currentChannel: ChatChannelType? = null,
     val displayOverrides: DisplayOverrides = DisplayOverrides(),
+    var lastProfileUpdate: Instant = Instant.DISTANT_PAST
 ) : ArcadeSender(uuid) {
     @JsonIgnore
     val extraData = mutableMapOf<String, Any?>()
@@ -64,7 +66,11 @@ class ArcadePlayer(
     }
 
     init {
-        if (rawHypixelData != null) {
+        updateHypixelData()
+    }
+
+    internal fun updateHypixelData(shouldUpdateFromJson: Boolean = true) {
+        if (shouldUpdateFromJson && rawHypixelData != null) {
             hypixelData = HypixelApi.objectMapper.treeToValue<HypixelPlayer>(rawHypixelData!!)
         } else if (hypixelData != null) {
             rawHypixelData = HypixelApi.objectMapper.valueToTree(hypixelData)

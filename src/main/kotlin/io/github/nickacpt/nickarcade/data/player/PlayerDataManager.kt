@@ -8,11 +8,14 @@ import io.github.nickacpt.nickarcade.utils.interop.name
 import io.github.nickacpt.nickarcade.utils.interop.uniqueId
 import io.github.nickacpt.nickarcade.utils.pluginInstance
 import io.github.nickacpt.nickarcade.utils.profiles.reloadProfile
+import kotlinx.datetime.Clock
 import net.minestom.server.command.CommandSender
 import net.minestom.server.entity.Player
 import org.litote.kmongo.upsert
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.hours
+import kotlin.time.measureTimedValue
 
 object PlayerDataManager {
     private val loadedPlayerMap = ConcurrentHashMap<UUID, ArcadePlayer>()
@@ -54,10 +57,26 @@ object PlayerDataManager {
             loadedPlayerMap[uniqueId]!!
         } else {
             logger.info("Unable to find cached player data for $name [$uniqueId]. Fetching from MongoDb or Hypixel.")
-            val playerData = playerDataCollection.findOneById(uniqueId) ?: createPlayerDataFromHypixel(uniqueId, name)
+            val playerData = loadPlayerDataFromMongoDb(uniqueId) ?: createPlayerDataFromHypixel(uniqueId, name)
             playerData.also {
                 loadedPlayerMap[uniqueId] = it
             }
+        }
+    }
+
+    private val refreshTime = 24.hours
+    private suspend fun loadPlayerDataFromMongoDb(uniqueId: UUID) = playerDataCollection.findOneById(uniqueId)?.also {
+        if ((Clock.System.now() - it.lastProfileUpdate) >= refreshTime) {
+            val user = "${it.actualDisplayName} [${it.uuid}]"
+            println("Updating user $user due to profile being too old.")
+            val (value, duration) = measureTimedValue {
+                fetchHypixelPlayerData(it.uuid, it.hypixelData?.displayName!!)
+            }
+            it.hypixelData = value
+            it.updateHypixelData(false)
+            it.lastProfileUpdate = Clock.System.now()
+            savePlayerData(it)
+            println("Updated user $user successfully (Took ${duration}).")
         }
     }
 
