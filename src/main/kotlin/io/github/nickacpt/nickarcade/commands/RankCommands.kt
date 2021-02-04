@@ -95,7 +95,7 @@ object RankCommands {
                 it.append(text("Found ${players.size} player(s) with rank $rank:", GREEN))
                 players.forEach { p ->
                     it.append(newline())
-                    it.append(text(p.getChatName()).hoverEvent(p.computeHoverEventComponent()))
+                    it.append(text(p.getChatName(true)).hoverEvent(p.computeHoverEventComponent()))
                 }
             }
         }

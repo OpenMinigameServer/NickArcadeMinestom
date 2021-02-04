@@ -71,8 +71,8 @@ var Player.actualPlayerProfile: PlayerProfile?
         if (!oldProfiles.containsKey(uniqueId))
             oldProfiles[uniqueId] = playerProfile
 
-        val finalProfile = value ?: oldProfiles[uniqueId]!!
-        this.playerProfile = finalProfile.copy(name = username)
+        val finalProfile = value ?: oldProfiles[uniqueId]!!.copy(name = username)
+        this.playerProfile = finalProfile
     }
 var Player.profileName: String
     get() = playerProfile.name ?: name
